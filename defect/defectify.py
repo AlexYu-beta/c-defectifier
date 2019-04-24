@@ -21,6 +21,7 @@ from utils.ast_util import parse_fileAST_exts
 from pycparser import c_ast, c_generator
 
 c_relational_binary_operator_set = {'>', '<', '>=', '<=', '==', '!='}
+c_arithmetic_binary_operator_set = {'+', '-', '*', '/', '%'}
 generator = c_generator.CGenerator()
 
 
@@ -800,6 +801,166 @@ def defectify_SDFN(ast, task_name, mode, logger, outer_count):
                 print("Err: Type: " + target_node_type + " not declared.")
 
 
+def defectify_OAIS(ast, task_name, mode, logger, outer_count):
+    """
+    OAIS is just like to_expr in SRIF, but different in sequence-flow
+    :param ast:
+    :param task_name:
+    :param mode:
+    :param logger:
+    :param outer_count:
+    :return:
+    """
+    global_ids, global_funcs = parse_fileAST_exts(ast)
+    id_name_map = {}
+    for global_id in global_ids:
+        id_name_map[global_id.name] = global_id.type.type.names[0]
+    if mode == "RANDOM":
+        func = random_pick(global_funcs, None)
+        type_decl_visitor = TypeDeclVisitor(func, mode, task_name)
+        type_decl_visitor.visit(func)
+        type_decls = type_decl_visitor.get_nodelist()
+        for type_decl in type_decls:
+            id_name_map[type_decl.declname] = type_decl.type.names[0]
+        binary_visitor = BinaryOpVisitor(func, mode, task_name)
+        binary_visitor.visit(func)
+        available_nodes = []
+        binary_ops = binary_visitor.get_nodelist()
+        for binary_op in binary_ops:
+            if binary_op.op in c_arithmetic_binary_operator_set:
+                if type(binary_op.left) == c_ast.ID or type(binary_op.right) == c_ast.ID:
+                    available_nodes.append(binary_op)
+        target_node = random_pick(available_nodes, None)
+        if type(target_node.left) == c_ast.ID:
+            temp = target_node.left
+            id_type = id_name_map[temp.name]
+            if id_type == "int" or id_type == "short" or id_type == "long":
+                right_const = c_ast.Constant(type=id_type,
+                                             value=str(gen_random(id_type)))
+                target_node.left = c_ast.BinaryOp(op=random_pick(['+', '-', '*', '/', '%'], None),
+                                                  left=temp,
+                                                  right=right_const,
+                                                  coord=temp.coord)
+            elif id_type == "char":
+                print("Err: OAIS not fit for char values.")
+                return
+            else:
+                right_const = c_ast.Constant(type=id_type,
+                                             value=str(gen_random(id_type)))
+                target_node.left = c_ast.BinaryOp(op=random_pick(['+', '-', '*', '/'], None),
+                                                  left=temp,
+                                                  right=right_const,
+                                                  coord=temp.coord)
+            if outer_count:
+                generate_exp_output("test_OAIS_left_{}.c".format(outer_count), task_name, ast)
+            else:
+                generate_exp_output("test_OAIS_left_{}.c".format(0), task_name, ast)
+            logger.log_OAIS(target_node.coord)
+            # retrieve ast
+            target_node.left = temp
+
+        if type(target_node.right) == c_ast.ID:
+            temp = target_node.right
+            id_type = id_name_map[temp.name]
+            if id_type == "int" or id_type == "short" or id_type == "long":
+                right_const = c_ast.Constant(type=id_type,
+                                             value=str(gen_random(id_type)))
+                target_node.right = c_ast.BinaryOp(op=random_pick(['+', '-', '*', '/', '%'], None),
+                                                   left=temp,
+                                                   right=right_const,
+                                                   coord=temp.coord)
+            elif id_type == "char":
+                print("Err: OAIS not fit for char values.")
+                return
+            else:
+                right_const = c_ast.Constant(type=id_type,
+                                             value=str(gen_random(id_type)))
+                target_node.right = c_ast.BinaryOp(op=random_pick(['+', '-', '*', '/'], None),
+                                                   left=temp,
+                                                   right=right_const,
+                                                   coord=temp.coord)
+            if outer_count:
+                generate_exp_output("test_OAIS_right_{}.c".format(outer_count), task_name, ast)
+            else:
+                generate_exp_output("test_OAIS_right_{}.c".format(0), task_name, ast)
+            logger.log_OAIS(target_node.coord)
+            # retrieve ast
+            target_node.right = temp
+
+    elif mode == "DEBUG":
+        for func in global_funcs:
+            temp_id_map = id_name_map
+            type_decl_visitor = TypeDeclVisitor(func, mode, task_name)
+            type_decl_visitor.visit(func)
+            type_decls = type_decl_visitor.get_nodelist()
+            for type_decl in type_decls:
+                temp_id_map[type_decl.declname] = type_decl.type.names[0]
+            binary_visitor = BinaryOpVisitor(func, mode, task_name)
+            binary_visitor.visit(func)
+            available_nodes = []
+            binary_ops = binary_visitor.get_nodelist()
+            for binary_op in binary_ops:
+                if binary_op.op in c_arithmetic_binary_operator_set:
+                    if type(binary_op.left) == c_ast.ID or type(binary_op.right) == c_ast.ID:
+                        available_nodes.append(binary_op)
+            for target_node in available_nodes:
+                if type(target_node.left) == c_ast.ID:
+                    temp = target_node.left
+                    id_type = id_name_map[temp.name]
+                    if id_type == "int" or id_type == "short" or id_type == "long":
+                        right_const = c_ast.Constant(type=id_type,
+                                                     value=str(gen_random(id_type)))
+                        target_node.left = c_ast.BinaryOp(op=random_pick(['+', '-', '*', '/', '%'], None),
+                                                          left=temp,
+                                                          right=right_const,
+                                                          coord=temp.coord)
+                    elif id_type == "char":
+                        print("Err: OAIS not fit for char values.")
+                        return
+                    else:
+                        right_const = c_ast.Constant(type=id_type,
+                                                     value=str(gen_random(id_type)))
+                        target_node.left = c_ast.BinaryOp(op=random_pick(['+', '-', '*', '/'], None),
+                                                          left=temp,
+                                                          right=right_const,
+                                                          coord=temp.coord)
+                    if outer_count:
+                        generate_exp_output("test_OAIS_left_{}.c".format(outer_count), task_name, ast)
+                    else:
+                        generate_exp_output("test_OAIS_left_{}.c".format(0), task_name, ast)
+                    logger.log_OAIS(target_node.coord)
+                    # retrieve ast
+                    target_node.left = temp
+
+                if type(target_node.right) == c_ast.ID:
+                    temp = target_node.right
+                    id_type = id_name_map[temp.name]
+                    if id_type == "int" or id_type == "short" or id_type == "long":
+                        right_const = c_ast.Constant(type=id_type,
+                                                     value=str(gen_random(id_type)))
+                        target_node.right = c_ast.BinaryOp(op=random_pick(['+', '-', '*', '/', '%'], None),
+                                                           left=temp,
+                                                           right=right_const,
+                                                           coord=temp.coord)
+                    elif id_type == "char":
+                        print("Err: OAIS not fit for char values.")
+                        return
+                    else:
+                        right_const = c_ast.Constant(type=id_type,
+                                                     value=str(gen_random(id_type)))
+                        target_node.right = c_ast.BinaryOp(op=random_pick(['+', '-', '*', '/'], None),
+                                                           left=temp,
+                                                           right=right_const,
+                                                           coord=temp.coord)
+                    if outer_count:
+                        generate_exp_output("test_OAIS_right_{}.c".format(outer_count), task_name, ast)
+                    else:
+                        generate_exp_output("test_OAIS_right_{}.c".format(0), task_name, ast)
+                    logger.log_OAIS(target_node.coord)
+                    # retrieve ast
+                    target_node.right = temp
+
+
 def defectify_test(ast, task_name, mode, logger, outer_count):
     """
     test
@@ -810,7 +971,7 @@ def defectify_test(ast, task_name, mode, logger, outer_count):
     :param outer_count:
     :return:
     """
-    print("testing SDFN..")
+    print("testing OAIS..")
 
 
 def defectify(ast, task_name, defectify_type, mode, logger, outer_count):

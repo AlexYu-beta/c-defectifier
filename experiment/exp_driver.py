@@ -84,10 +84,10 @@ def test():
     ast = parser.parse(code)
     logger = Logger("test")
 
-    defectify(ast, "test", "test",  "DEBUG", logger, None)
+    defectify(ast, "test", "test", "RANDOM", logger, None)
 
 
 if __name__ == '__main__':
-    task_name = "Test04_SDFN"
+    task_name = "Test05_OAIS"
     drive(task_name)
     # test()

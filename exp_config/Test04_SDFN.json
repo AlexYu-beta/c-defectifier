@@ -1,1 +1,1 @@
-{"task_name": "Test04_SDFN", "src_dir": "/home/alex/PycharmProjects/c-defectifier/exp_src/Test04_SDFN", "method": "freq", "defects": {"SDFN": 10}}
+{"task_name": "Test05_OAIS", "src_dir": "/home/alex/PycharmProjects/c-defectifier/exp_src/Test05_OAIS", "method": "freq", "defects": {"SDFN": 10}}

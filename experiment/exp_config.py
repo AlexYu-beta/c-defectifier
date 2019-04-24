@@ -29,7 +29,7 @@ conf_template_01 = {
     }
 }
 
-conf_template_02 = {
+OILN = {
     "task_name": "Test02_OILN",
     "src_dir": "/home/alex/PycharmProjects/c-defectifier/exp_src/Test02_OILN",
     "method": "freq",
@@ -38,7 +38,7 @@ conf_template_02 = {
     }
 }
 
-conf_template_03 = {
+SRIF = {
     "task_name": "Test03_SRIF",
     "src_dir": "/home/alex/PycharmProjects/c-defectifier/exp_src/Test03_SRIF",
     "method": "freq",
@@ -47,12 +47,21 @@ conf_template_03 = {
     }
 }
 
-conf_template_04 = {
+SDFN = {
     "task_name": "Test04_SDFN",
     "src_dir": "/home/alex/PycharmProjects/c-defectifier/exp_src/Test04_SDFN",
     "method": "freq",
     "defects": {
         "SDFN": 10
+    }
+}
+
+OAIS = {
+    "task_name": "Test05_OAIS",
+    "src_dir": "/home/alex/PycharmProjects/c-defectifier/exp_src/Test05_OAIS",
+    "method": "freq",
+    "defects": {
+        "OAIS": 10
     }
 }
 
@@ -82,7 +91,7 @@ def generate_experiment_config(task_name):
 
 
 if __name__ == '__main__':
-    task_name = "Test04_SDFN"
-    conf = conf_template_04
+    task_name = "Test05_OAIS"
+    conf = OAIS
     generate_experiment_config(task_name)
 
