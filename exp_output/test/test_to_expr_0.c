@@ -1,10 +1,20 @@
+char flag = 'N';
+static int test = 20;
+int func(int a)
+{
+  if (((a / 2) % 2) == 0)
+    return a;
+  else
+    return a * 2;
+
+}
+
 int main(int argc, char *argv[])
 {
   int i;
   int n;
   int temp;
   int sum = 0;
-  int flag = 10;
   scanf("%d\n", &n);
   for (i = 0; i < n; i++)
   {
@@ -12,27 +22,12 @@ int main(int argc, char *argv[])
     sum += temp;
   }
 
-  if ((((sum > 10) && ((sum + flag) < 20)) || ((sum + flag) < 30)) || (sum == 0))
+  if (((sum > 10) && (sum < 20)) && (sum < 30))
   {
     sum -= 10;
-    if (flag > 10)
-    {
-      sum++;
-    }
-    else
-      if (flag < 10)
-    {
-      sum--;
-    }
-    else
-    {
-      sum = sum * 2;
-    }
-
-
   }
 
-  if (sum > 20)
+  if (func(sum) > test)
   {
     if ((sum > 30) && (sum < 40))
     {

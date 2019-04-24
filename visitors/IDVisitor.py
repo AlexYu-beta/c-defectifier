@@ -25,3 +25,10 @@ class IDVisitor(c_ast.NodeVisitor):
 
     def get_name_list(self):
         return self.names
+
+    def get_nodes(self, name):
+        ret = []
+        for node in self.nodes:
+            if node.name == name:
+                ret.append(node)
+        return ret

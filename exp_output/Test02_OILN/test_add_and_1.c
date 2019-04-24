@@ -12,10 +12,10 @@ int main(int argc, char *argv[])
     sum += temp;
   }
 
-  if ((((sum > 10) && ((sum + flag) < 20)) || ((sum + flag) < 30)) && (sum != 40))
+  if (((sum > 10) && ((sum + flag) < 20)) || ((sum + flag) < 30))
   {
     sum -= 10;
-    if (flag > 10)
+    if ((flag != 2) && (flag > 10))
     {
       sum++;
     }

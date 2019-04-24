@@ -39,8 +39,18 @@ conf_template_02 = {
 }
 
 conf_template_03 = {
-    "task_name": "Test03_simple_try",
-    "src_dir": "/home/alex/PycharmProjects/c-defectifier/exp_src/Test03_simple_try",
+    "task_name": "Test03_SRIF",
+    "src_dir": "/home/alex/PycharmProjects/c-defectifier/exp_src/Test03_SRIF",
+    "method": "freq",
+    "defects": {
+        "SRIF": 20
+    }
+}
+
+
+conf_template_04 = {
+    "task_name": "Test04_simple_try",
+    "src_dir": "/home/alex/PycharmProjects/c-defectifier/exp_src/Test04_simple_try",
     "method": "prob",
     "number": 20,
     "defects": {
@@ -64,7 +74,7 @@ def generate_experiment_config(task_name):
 
 
 if __name__ == '__main__':
-    task_name = "Test02_OILN"
-    conf = conf_template_02
+    task_name = "Test03_SRIF"
+    conf = conf_template_03
     generate_experiment_config(task_name)
 

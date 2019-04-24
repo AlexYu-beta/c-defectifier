@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 
   if (sum > 20)
   {
-    if ((sum != 30) || ((sum > 30) && (sum < 40)))
+    if (sum > 30)
     {
       sum -= 10;
     }

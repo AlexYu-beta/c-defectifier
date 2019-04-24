@@ -83,10 +83,11 @@ def test():
     parser = c_parser.CParser()
     ast = parser.parse(code)
     logger = Logger("test")
-    defectify(ast, "test", "test",  "DEBUG", logger)
+
+    defectify(ast, "test", "test",  "RANDOM", logger, None)
 
 
 if __name__ == '__main__':
-    task_name = "Test02_OILN"
+    task_name = "Test03_SRIF"
     drive(task_name)
     # test()

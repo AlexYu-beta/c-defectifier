@@ -2,7 +2,7 @@ char flag = 'N';
 static int test = 20;
 int func(int a)
 {
-  if ((a == 5) && ((a % 2) == 0))
+  if ((a % 2) == 0)
     return a;
   else
     return a * 2;
@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     sum += temp;
   }
 
-  if (((sum > 10) && (sum < 20)) && (sum < 30))
+  if ((((sum > 10) && (sum < 20)) && (sum < 30)) && (sum != 50))
   {
     sum -= 10;
   }

@@ -16,8 +16,8 @@ def get_log_info(task_name):
         load_dict = json.load(f)
     exp_conf_dir = load_dict["exp_conf_dir"]
     log_list = load_dict["log_list"]
-    print("number of items in log list:")
-    print(len(log_list))
+    for log_item in log_list:
+        print(log_item)
 
 
 def evaluate(task_name):

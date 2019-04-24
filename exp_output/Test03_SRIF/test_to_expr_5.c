@@ -2,7 +2,7 @@ char flag = 'N';
 static int test = 20;
 int func(int a)
 {
-  if ((a == 5) && ((a % 2) == 0))
+  if (((a / 40) % 2) == 0)
     return a;
   else
     return a * 2;

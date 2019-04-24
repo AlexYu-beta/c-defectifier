@@ -24,3 +24,11 @@ class TypeDeclVisitor(c_ast.NodeVisitor):
 
     def get_nodelist(self):
         return self.nodelist
+
+    def get_node(self, name):
+        ret = None
+        for type_decl in self.nodelist:
+            if type_decl.declname == name:
+                ret = type_decl
+                break
+        return ret
