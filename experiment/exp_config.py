@@ -65,6 +65,15 @@ OAIS = {
     }
 }
 
+STYP = {
+    "task_name": "Test06_STYP",
+    "src_dir": "/home/alex/PycharmProjects/c-defectifier/exp_src/Test06_STYP",
+    "method": "freq",
+    "defects": {
+        "STYP": 10
+    }
+}
+
 conf_prob_test = {
     "task_name": "prob_test",
     "src_dir": "/home/alex/PycharmProjects/c-defectifier/exp_src/prob_test",
@@ -91,7 +100,7 @@ def generate_experiment_config(task_name):
 
 
 if __name__ == '__main__':
-    task_name = "Test05_OAIS"
-    conf = OAIS
+    task_name = "Test06_STYP"
+    conf = STYP
     generate_experiment_config(task_name)
 
