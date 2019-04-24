@@ -111,6 +111,20 @@ class Logger:
         }
         self.log_items.append(log_item)
 
+    def log_SMOV(self, position_1, position_2):
+        timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+        log_item = {
+            "timestamp": timestamp,
+            "line_num": position_1.line,
+            "column_num": position_1.column,
+            "def_type": "SMOV",
+            "parameters": {
+                "line": position_2.line,
+                "column": position_2.column
+            }
+        }
+        self.log_items.append(log_item)
+
     def write_log(self):
         ret = {
             "task_name": self.task_name,

@@ -74,6 +74,15 @@ STYP = {
     }
 }
 
+SMOV = {
+    "task_name": "Test07_SMOV",
+    "src_dir": "/home/alex/PycharmProjects/c-defectifier/exp_src/Test07_SMOV",
+    "method": "freq",
+    "defects": {
+        "SMOV": 10
+    }
+}
+
 conf_prob_test = {
     "task_name": "prob_test",
     "src_dir": "/home/alex/PycharmProjects/c-defectifier/exp_src/prob_test",
@@ -100,7 +109,7 @@ def generate_experiment_config(task_name):
 
 
 if __name__ == '__main__':
-    task_name = "Test06_STYP"
-    conf = STYP
+    task_name = "Test07_SMOV"
+    conf = SMOV
     generate_experiment_config(task_name)
 

@@ -1028,6 +1028,63 @@ def defectify_STYP(ast, task_name, mode, logger, outer_count):
                 var_decl.type.type = c_ast.IdentifierType(names=[temp])
 
 
+def defectify_SMOV(ast, task_name, mode, logger, outer_count):
+    """
+
+    :param ast:
+    :param task_name:
+    :param mode:
+    :param logger:
+    :param outer_count:
+    :return:
+    """
+    available_stmts = []
+    case_visitor = CaseVisitor(ast, mode, task_name)
+    case_visitor.visit(ast)
+    case_nodes = case_visitor.get_nodelist()
+    for case_node in case_nodes:
+        case_node.stmts = list(filter(lambda x: type(x) != c_ast.Decl, case_node.stmts))
+        if len(case_node.stmts) > 1:
+            available_stmts.append(case_node.stmts)
+    compound_visitor = CompoundVisitor(ast, mode, task_name)
+    compound_visitor.visit(ast)
+    compound_nodes = compound_visitor.get_nodelist()
+    for compound_node in compound_nodes:
+        compound_node.block_items = list(filter(lambda x: type(x) != c_ast.Decl, compound_node.block_items))
+        if len(compound_node.block_items) > 1:
+            available_stmts.append(compound_node.block_items)
+    default_visitor = DefaultVisitor(ast, mode, task_name)
+    default_visitor.visit(ast)
+    default_nodes = default_visitor.get_nodelist()
+    for default_node in default_nodes:
+        default_node.stmts = list(filter(lambda x: type(x) != c_ast.Decl, default_node.stmts))
+        if len(default_node.stmts) > 1:
+            available_stmts.append(default_node.stmts)
+    if mode == "RANDOM":
+        target_stmts = random_pick(available_stmts, None)
+        length = len(target_stmts)
+        distance = random_pick(range(1, length), None)
+        stmt_1 = random_pick(target_stmts, None)
+        index_1 = target_stmts.index(stmt_1)
+        index_2 = (index_1 + distance) % length
+        temp = target_stmts[index_1]
+        target_stmts[index_1] = target_stmts[index_2]
+        target_stmts[index_2] = temp
+        if outer_count:
+            generate_exp_output("test_SMOV_{}.c".format(outer_count), task_name, ast)
+        else:
+            generate_exp_output("test_SMOV_{}.c".format(0), task_name, ast)
+        logger.log_SMOV(target_stmts[index_1].coord, target_stmts[index_2].coord)
+        # retrieve ast
+        temp = target_stmts[index_1]
+        target_stmts[index_1] = target_stmts[index_2]
+        target_stmts[index_2] = temp
+
+    elif mode == "DEBUG":
+        # maybe not feasible for listing all cases
+        pass
+
+
 def defectify_test(ast, task_name, mode, logger, outer_count):
     """
     test
@@ -1038,7 +1095,8 @@ def defectify_test(ast, task_name, mode, logger, outer_count):
     :param outer_count:
     :return:
     """
-    print("testing STYP..")
+    print("testing SMOV..")
+
 
 
 def defectify(ast, task_name, defectify_type, mode, logger, outer_count):
