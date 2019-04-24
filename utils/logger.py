@@ -125,6 +125,20 @@ class Logger:
         }
         self.log_items.append(log_item)
 
+    def log_OFPO(self, position, index_1, index_2):
+        timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+        log_item = {
+            "timestamp": timestamp,
+            "line_num": position.line,
+            "column_num": position.column,
+            "def_type": "SMOV",
+            "parameters": {
+                "index_1": index_1,
+                "index_2": index_2
+            }
+        }
+        self.log_items.append(log_item)
+
     def write_log(self):
         ret = {
             "task_name": self.task_name,

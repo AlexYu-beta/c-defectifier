@@ -83,6 +83,15 @@ SMOV = {
     }
 }
 
+OFPO = {
+    "task_name": "Test08_OFPO",
+    "src_dir": "/home/alex/PycharmProjects/c-defectifier/exp_src/Test08_OFPO",
+    "method": "freq",
+    "defects": {
+        "OFPO": 10
+    }
+}
+
 conf_prob_test = {
     "task_name": "prob_test",
     "src_dir": "/home/alex/PycharmProjects/c-defectifier/exp_src/prob_test",
@@ -109,7 +118,7 @@ def generate_experiment_config(task_name):
 
 
 if __name__ == '__main__':
-    task_name = "Test07_SMOV"
-    conf = SMOV
+    task_name = "Test08_OFPO"
+    conf = OFPO
     generate_experiment_config(task_name)
 
