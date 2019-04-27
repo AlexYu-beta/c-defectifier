@@ -4,28 +4,41 @@ from utils.fs_util import gen_exp_cfg
     Write your experiment configuration here.
     You can use the template below.
     <task_name>(str) is the name of the experiment
-    <src_dir>(str) is the path of source files on which to experiment
-    <method>(str) is the defect-planting method
-        - 'enum': try all defect possibilities(DEBUG mode)
-        - 'prob': plant defect based on probability distribution
-        - 'freq': plant defect based on frequency distribution
-    <number>(int) is the number of randomized defect to choose to plant, required if <method> is 'prob'
-    <defects>(dict) is the dictionary of defects and their weights
-        - <defect>::=<defect name>: <weight>
-        - <weight> can be anything if <method> is 'enum'
-        - <weight> can be any non-negative integer if <method> is 'freq'
-        - <weight> can be some float between 0 and 1 if <method> is 'prob' 
+    <src_dir>(str) is the path of source code on which to experiment
+    <src_type>(str): decides the type of source code
+        - 'files': source code stored as .c files
+        - 'db': source code stored as database items
+    <sift_option>: used as optional description of sifting condition(maybe query), keep blank with no sift option
+    <limit>(int): limit the number of items in <src_dir>
+    <defects>(dict): is the dictionary of defects and their weights
+        - <defect name>(str):<weight>(float)
+            ...
+    <repeat_min>(int): the minimum times of repetition for each item
+    <repeat_max>(int): the maximum times of repetition for each item 
+    <specifications>(dict): stores the detailed specifications of the experiment, including each type of defects
+        - <spec item>(str):<specification>
+            ...
 """
 conf = {
 
 }
 
-conf_template_01 = {
+conf_template = {
     "task_name": "Test01_simple_try",
     "src_dir": "/home/alex/PycharmProjects/c-defectifier/exp_src/Test01_simple_try",
-    "method": "enum",
+    "src_type": "files",
+    "sift_option": "",
+    "limit": 1,
     "defects": {
-        "ORRN": 1
+        "ORRN": 1.0
+    },
+    "repeat_min": 1,
+    "repeat_max": 10,
+    "specifications": {
+        "random_picker": {
+            "random_int_list": [0, 1, 2, 3, 5, 10, 20, 30, 40, 50, 100],
+            "random_chr_list": [chr(i) for i in range(128)]
+        }
     }
 }
 
@@ -112,13 +125,13 @@ def generate_experiment_config(task_name):
     :return:
     """
     if conf == {}:
-        gen_exp_cfg(task_name, conf_template_01)
+        gen_exp_cfg(task_name, conf_template)
     else:
         gen_exp_cfg(task_name, conf)
 
 
 if __name__ == '__main__':
-    task_name = "Test08_OFPO"
-    conf = OFPO
+    task_name = "Test01_simple_try"
+    conf = conf_template
     generate_experiment_config(task_name)
 

@@ -2,6 +2,7 @@ from visitors.AssignmentVisitor import AssignmentVisitor
 from visitors.BinaryOpVisitor import BinaryOpVisitor
 from visitors.CaseVisitor import CaseVisitor
 from visitors.CompoundVisitor import CompoundVisitor
+from visitors.ConstantVisitor import ConstantVisitor
 from visitors.DeclVisitor import DeclVisitor
 from visitors.DefaultVisitor import DefaultVisitor
 from visitors.DoWhileVisitor import DoWhileVisitor
@@ -1161,7 +1162,21 @@ def defectify_test(ast, task_name, mode, logger, outer_count):
     :param outer_count:
     :return:
     """
-    pass
+    # print("testing DCCR")
+    # constant_visitor = ConstantVisitor(ast, mode, task_name)
+    # constant_visitor.visit(ast)
+    # constants = constant_visitor.get_nodelist()
+    # assignment_visitor = AssignmentVisitor(ast, mode, task_name)
+    # assignment_visitor.visit(ast)
+    # assignments = assignment_visitor.get_nodelist()
+    # binary_visitor = BinaryOpVisitor(ast, mode, task_name)
+    # binary_visitor.visit(ast)
+    # binary_ops = binary_visitor.get_nodelist()
+    # ternary_visitor = TernaryOpVisitor(ast, mode ,task_name)
+    # ternary_visitor.visit(ast)
+    # ternary_ops = ternary_visitor.get_nodelist()
+    defectify_SRIF(ast, task_name, mode, logger, outer_count)
+
 
 
 def defectify(ast, task_name, defectify_type, mode, logger, outer_count):
