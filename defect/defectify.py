@@ -847,71 +847,45 @@ def defectify_OAIS(ast, task_name, logger, exp_spec_dict):
         # target_node.right = temp
         return True
 
-#
-# def defectify_STYP(ast, task_name, mode, logger, outer_count):
-#     """
-#
-#     :param ast:
-#     :param task_name:
-#     :param mode:
-#     :param logger:
-#     :param outer_count:
-#     :return:
-#     """
-#     global_ids, global_funcs = parse_fileAST_exts(ast)
-#     global_func_names = [item.decl.name for item in global_funcs]
-#     decl_visitor = DeclVisitor(ast, mode, task_name)
-#     decl_visitor.visit(ast)
-#     decls = decl_visitor.get_nodelist()
-#     var_decls = [item for item in decls if item.name not in global_func_names]
-#     int_family = ["short", "int", "long"]
-#     char_family = ["char"]
-#     float_family = ["float", "double"]
-#     if mode == "RANDOM":
-#         var_decl = random_pick(var_decls, None)
-#         type_name = var_decl.type.type.names[0]
-#         if type_name in int_family:
-#             int_family.remove(type_name)
-#             replace_type = random_pick(int_family, None)
-#         elif type_name in char_family:
-#             replace_type = "int"
-#         elif type_name in float_family:
-#             float_family.remove(type_name)
-#             replace_type = random_pick(float_family, None)
-#         else:
-#             print("Err: Current Type cannot be replaced")
-#         temp = var_decl.type.type.names[0]
-#         var_decl.type.type = c_ast.IdentifierType(names=[replace_type])
-#         if outer_count:
-#             generate_exp_output("test_STYP_{}.c".format(outer_count), task_name, ast)
-#         else:
-#             generate_exp_output("test_STYP_{}.c".format(0), task_name, ast)
-#         logger.log_STYP(var_decl.coord, temp, replace_type)
-#         # retrieve ast
-#         var_decl.type.type = c_ast.IdentifierType(names=[temp])
-#     elif mode == "DEBUG":
-#         for var_decl in var_decls:
-#             type_name = var_decl.type.type.names[0]
-#             if type_name in int_family:
-#                 int_family.remove(type_name)
-#                 replace_types = int_family
-#             elif type_name in char_family:
-#                 replace_types = ["int"]
-#             elif type_name in float_family:
-#                 float_family.remove(type_name)
-#                 replace_types = float_family
-#             else:
-#                 print("Err: Current Type cannot be replaced")
-#             for replace_type in replace_types:
-#                 temp = var_decl.type.type.names[0]
-#                 var_decl.type.type = c_ast.IdentifierType(names=[replace_type])
-#                 if outer_count:
-#                     generate_exp_output("test_STYP_{}.c".format(outer_count), task_name, ast)
-#                 else:
-#                     generate_exp_output("test_STYP_{}.c".format(0), task_name, ast)
-#                 logger.log_STYP(var_decl.coord, temp, replace_type)
-#                 # retrieve ast
-#                 var_decl.type.type = c_ast.IdentifierType(names=[temp])
+
+def defectify_STYP(ast, task_name, logger, exp_spec_dict):
+    """
+
+    :param ast:
+    :param task_name:
+    :param logger:
+    :param exp_spec_dict:
+    :return:
+    """
+    global_ids, global_funcs = parse_fileAST_exts(ast)
+    global_func_names = [item.decl.name for item in global_funcs]
+    decl_visitor = DeclVisitor(ast)
+    decl_visitor.visit(ast)
+    decls = decl_visitor.get_nodelist()
+    var_decls = [item for item in decls if item.name not in global_func_names]
+    int_family = ["short", "int", "long"]
+    char_family = ["char"]
+    float_family = ["float", "double"]
+    var_decl = random_pick_probless(var_decls)
+    type_name = var_decl.type.type.names[0]
+    if type_name in int_family:
+        int_family.remove(type_name)
+        replace_type = random_pick_probless(int_family)
+    elif type_name in char_family:
+        replace_type = "int"
+    elif type_name in float_family:
+        float_family.remove(type_name)
+        replace_type = random_pick_probless(float_family)
+    else:
+        print("Err: Current Type cannot be replaced")
+        return False
+    temp = var_decl.type.type.names[0]
+    var_decl.type.type = c_ast.IdentifierType(names=[replace_type])
+    logger.log_STYP(var_decl.coord, temp, replace_type)
+    # retrieve ast
+    # var_decl.type.type = c_ast.IdentifierType(names=[temp])
+    return True
+
 #
 #
 # def defectify_SMOV(ast, task_name, mode, logger, outer_count):

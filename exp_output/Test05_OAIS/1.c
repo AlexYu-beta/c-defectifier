@@ -1,6 +1,5 @@
-int flag = 'N';
+char flag = 'N';
 static int test = 20;
-int test2 = 3.4;
 int func(int a)
 {
   if ((a % 2) == 0)
@@ -26,7 +25,7 @@ int main(int argc, char *argv[])
   if (sum > 10)
   {
     sum -= test / 4;
-    sum += (test + 1) + test;
+    sum += (test + 1) + (test % 5);
   }
 
   if (func(sum) > test)

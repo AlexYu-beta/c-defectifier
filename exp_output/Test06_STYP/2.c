@@ -12,10 +12,10 @@ int func(int a)
 
 int main(int argc, char *argv[])
 {
-  int i;
+  long i;
   int n;
   int temp;
-  long sum = 0;
+  short sum = 0;
   scanf("%d\n", &n);
   for (i = 0; i < n; i++)
   {
