@@ -36,20 +36,20 @@ def drive(task_name):
         count = 0
         for file in file_list:
             src_path = os.path.join(src_folder, file)
+            if os.path.isfile(src_path):
+                src_file = open(src_path, 'r')
+                code = src_file.read()
+                src_file.close()
+                parser = c_parser.CParser()
+                ast = parser.parse(code)
             for i in range(get_randint(repeat_min, repeat_max)):
-                count += 1
-                if os.path.isfile(src_path):
-                    src_file = open(src_path, 'r')
-                    code = src_file.read()
-                    src_file.close()
-                    parser = c_parser.CParser()
-                    ast = parser.parse(code)
-                    defect = random_pick(defects, prob)
-                    success = defectify(ast, task_name, defect, logger, exp_spec_dict)
-                    if success:
-                        generate_exp_output(str(count) + ".c", task_name, ast)
-                    else:
-                        logger.log_nothing()
+                defect = random_pick(defects, prob)
+                success = defectify(ast, task_name, defect, logger, exp_spec_dict)
+                if success:
+                    count += 1
+                    generate_exp_output(str(count) + ".c", task_name, ast)
+                else:
+                    logger.log_nothing()
             logger.write_log()
     elif src_type == "db":
         sift_option = exp_cfg["sift_option"]
@@ -81,6 +81,6 @@ def test():
 
 
 if __name__ == '__main__':
-    task_name = "Test02_OILN"
+    task_name = "Test03_SRIF"
     drive(task_name)
     # test()

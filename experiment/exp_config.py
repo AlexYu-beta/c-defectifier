@@ -116,6 +116,31 @@ OILN_3 = {
     }
 }
 
+SRIF_1 = {
+    "task_name": "Test03_SRIF",
+    "src_dir": "/home/alex/PycharmProjects/c-defectifier/exp_src/Test03_SRIF",
+    "src_type": "files",
+    "sift_option": "",
+    "limit": 1,
+    "defects": {
+        "SRIF_replace_var": 0.3,
+        "SRIF_to_expr": 0.4,
+        "SRIF_wrap_func_call": 0.2,
+        "SRIF_unwrap_func_call": 0.1,
+    },
+    "repeat_min": 2,
+    "repeat_max": 3,
+    "specifications": {
+        "random_picker": {
+            "random_int_list": [0, 1, 2, 3, 5, 10, 20, 30, 40, 50, 100],
+            "random_chr_list": [chr(i) for i in range(128)]
+        },
+        "OILN": {
+
+        }
+    }
+}
+
 
 SRIF = {
     "task_name": "Test03_SRIF",
@@ -197,7 +222,7 @@ def generate_experiment_config(task_name):
 
 
 if __name__ == '__main__':
-    task_name = "Test02_OILN"
-    conf = OILN_2
+    task_name = "Test03_SRIF"
+    conf = SRIF_1
     generate_experiment_config(task_name)
 
