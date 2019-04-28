@@ -924,71 +924,65 @@ def defectify_SMOV(ast, task_name, logger, exp_spec_dict):
     return True
 
 
-#
-# def defectify_OFPO(ast, task_name, mode, logger, outer_count):
-#     """
-#
-#     :param ast:
-#     :param task_name:
-#     :param mode:
-#     :param logger:
-#     :param outer_count:
-#     :return:
-#     """
-#     global_ids, global_funcs = parse_fileAST_exts(ast)
-#     available_funcs = []
-#     funcs_param_type_map = {}
-#     for global_func in global_funcs:
-#         params = global_func.decl.type.args.params
-#         param_type_map = {}
-#         for param in params:
-#             param_type = param.type.type
-#             if type(param_type) == c_ast.IdentifierType:
-#                 param_type_name = param_type.names[0]
-#             elif type(param_type) == c_ast.PtrDecl:
-#                 param_type_name = param_type.type.type.names[0] + "*"
-#             if param_type_name in param_type_map.keys():
-#                 param_type_map[param_type_name].append(params.index(param))
-#             else:
-#                 param_type_map[param_type_name] = [params.index(param)]
-#         for index_list in param_type_map.values():
-#             if len(index_list) > 1:
-#                 available_funcs.append(global_func)
-#                 funcs_param_type_map[global_func.decl.name] = param_type_map
-#                 break
-#     func_call_visitor = FuncCallVisitor(ast, mode, task_name)
-#     func_call_visitor.visit(ast)
-#     func_calls = func_call_visitor.get_nodelist()
-#     available_func_names = [func.decl.name for func in available_funcs]
-#     available_func_calls = [func_call for func_call in func_calls if func_call.name.name in available_func_names]
-#     if mode == "RANDOM":
-#         target_func_call = random_pick(available_func_calls, None)
-#         target_param_type_map = funcs_param_type_map[target_func_call.name.name]
-#         available_param_index = {key: value for key, value in target_param_type_map.items() if len(value) > 1}
-#         target_key = random_pick(list(available_param_index.keys()), None)
-#         target_param_index = available_param_index[target_key]
-#         length = len(target_param_index)
-#         index_1 = target_param_index.index(random_pick(target_param_index, None))
-#         distance = random_pick(range(1, length), None)
-#         index_2 = (index_1 + distance) % length
-#         index_1 = target_param_index[index_1]
-#         index_2 = target_param_index[index_2]
-#         target_arg = target_func_call.args.exprs
-#         temp = target_arg[index_1]
-#         target_arg[index_1] = target_arg[index_2]
-#         target_arg[index_2] = temp
-#         if outer_count:
-#             generate_exp_output("test_OFPO_{}.c".format(outer_count), task_name, ast)
-#         else:
-#             generate_exp_output("test_OFPO_{}.c".format(0), task_name, ast)
-#         logger.log_OFPO(target_func_call.coord, index_1, index_2)
-#         # retrieve ast
-#         temp = target_arg[index_1]
-#         target_arg[index_1] = target_arg[index_2]
-#         target_arg[index_2] = temp
-#     elif mode == "DEBUG":
-#         pass
-#         # not feasible for listing all cases in current circumstances
+def defectify_OFPO(ast, task_name, logger, exp_spec_dict):
+    """
+
+    :param ast:
+    :param task_name:
+    :param logger:
+    :param exp_spec_dict:
+    :return:
+    """
+    global_ids, global_funcs = parse_fileAST_exts(ast)
+    available_funcs = []
+    funcs_param_type_map = {}
+    for global_func in global_funcs:
+        params = global_func.decl.type.args.params
+        param_type_map = {}
+        for param in params:
+            param_type = param.type.type
+            if type(param_type) == c_ast.IdentifierType:
+                param_type_name = param_type.names[0]
+            elif type(param_type) == c_ast.PtrDecl:
+                param_type_name = param_type.type.type.names[0] + "*"
+            if param_type_name in param_type_map.keys():
+                param_type_map[param_type_name].append(params.index(param))
+            else:
+                param_type_map[param_type_name] = [params.index(param)]
+        for index_list in param_type_map.values():
+            if len(index_list) > 1:
+                available_funcs.append(global_func)
+                funcs_param_type_map[global_func.decl.name] = param_type_map
+                break
+    func_call_visitor = FuncCallVisitor(ast)
+    func_call_visitor.visit(ast)
+    func_calls = func_call_visitor.get_nodelist()
+    available_func_names = [func.decl.name for func in available_funcs]
+    available_func_calls = [func_call for func_call in func_calls if func_call.name.name in available_func_names]
+    if len(available_func_calls) == 0:
+        print("Warning: No available function calls can be found.")
+        return False
+    target_func_call = random_pick_probless(available_func_calls)
+    target_param_type_map = funcs_param_type_map[target_func_call.name.name]
+    available_param_index = {key: value for key, value in target_param_type_map.items() if len(value) > 1}
+    target_key = random_pick_probless(list(available_param_index.keys()))
+    target_param_index = available_param_index[target_key]
+    length = len(target_param_index)
+    index_1 = target_param_index.index(random_pick_probless(target_param_index))
+    distance = get_randint(1, length - 1)
+    index_2 = (index_1 + distance) % length
+    index_1 = target_param_index[index_1]
+    index_2 = target_param_index[index_2]
+    target_arg = target_func_call.args.exprs
+    temp = target_arg[index_1]
+    target_arg[index_1] = target_arg[index_2]
+    target_arg[index_2] = temp
+    logger.log_OFPO(target_func_call.coord, index_1, index_2)
+    # retrieve ast
+    # temp = target_arg[index_1]
+    # target_arg[index_1] = target_arg[index_2]
+    # target_arg[index_2] = temp
+    return True
 
 
 
