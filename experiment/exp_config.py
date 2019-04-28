@@ -160,12 +160,22 @@ SDFN_1 = {
     }
 }
 
-SDFN = {
-    "task_name": "Test04_SDFN",
-    "src_dir": "/home/alex/PycharmProjects/c-defectifier/exp_src/Test04_SDFN",
-    "method": "freq",
+OAIS_1 = {
+    "task_name": "Test05_OAIS",
+    "src_dir": "/home/alex/PycharmProjects/c-defectifier/exp_src/Test05_OAIS",
+    "src_type": "files",
+    "sift_option": "",
+    "limit": 1,
     "defects": {
-        "SDFN": 10
+        "OAIS": 1.0
+    },
+    "repeat_min": 1,
+    "repeat_max": 2,
+    "specifications": {
+        "random_picker": {
+            "random_int_list": [0, 1, 2, 3, 5, 10, 20, 30, 40, 50, 100],
+            "random_chr_list": [chr(i) for i in range(128)]
+        }
     }
 }
 
@@ -231,7 +241,6 @@ def generate_experiment_config(task_name):
 
 
 if __name__ == '__main__':
-    task_name = "Test04_SDFN"
-    conf = SDFN_1
+    task_name = "Test05_OAIS"
+    conf = OAIS_1
     generate_experiment_config(task_name)
-
