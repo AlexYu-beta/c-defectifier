@@ -1,13 +1,3 @@
-char flag = 'N';
-static int test = 20;
-int func (int a)
-{
-    if (a % 2 == 0)
-        return a;
-    else
-        return a * 2;    
-}
-
 int main (int argc, char *argv[])
 {
     int i,n,temp;
@@ -22,7 +12,7 @@ int main (int argc, char *argv[])
     {
         sum-=10;
     }
-    if(func(sum)>test)
+    if(sum>20)
     {
         if(sum>30 && sum<40)
         {

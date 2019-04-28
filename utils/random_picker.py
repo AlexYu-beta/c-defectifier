@@ -1,6 +1,30 @@
 import random
 
 
+def get_randint(a, b):
+    """
+    get a random int value between a and b
+    :param a:
+    :param b:
+    :return:
+    """
+    if a < b:
+        return random.randint(a, b)
+    else:
+        return random.randint(b, a)
+
+
+def random_pick_probless(items):
+    """
+    pick item from a list randomly without one given probability list
+    :param items:
+    :return:
+    """
+    len_i = len(items)
+    index = random.randint(0, len_i - 1)
+    return items[index]
+
+
 def random_pick(items, prob):
     """
     pick item from a list randomly according to given probability
@@ -8,9 +32,9 @@ def random_pick(items, prob):
     :param prob:                list of probability distribution
     :return:                    an item picked from the list
     """
-    len_i = len(items)
     if prob is None:
-        prob = [1/len_i] * len_i
+        return random_pick_probless(items)
+    len_i = len(items)
     len_p = len(prob)
     if len_i != len_p:
         print("Err: Size of items does not match with that of probability.")
@@ -29,25 +53,30 @@ def random_pick(items, prob):
     return item
 
 
-def gen_random(gen_type):
+class RandomPicker:
     """
-    arbitrarily generate a random value based on given type
-    :param gen_type:                type(str) of random value to generate
-    :return:
+    a simple random value generator
     """
-    number_list = [0, 1, 2, 3, 5, 10, 20, 30, 40, 50, 100]
-    # emmm
-    char_list = [chr(i) for i in range(128)]
-    if gen_type == "char":
-        return random_pick(char_list, None)
-    else:
-        return random_pick(number_list, None)
+    def __init__(self, int_list, chr_list):
+        self.int_list = int_list if int_list is not None else [0, 1, 2, 3, 5, 10, 20, 30, 40, 50, 100]
+        self.chr_list = chr_list if chr_list is not None else [chr(i) for i in range(128)]
+
+    def gen_random(self, gen_type):
+        """
+        arbitrarily generate a random value based on given type
+        :param gen_type:                type(str) of random value to generate
+        :return:
+        """
+        if gen_type == "char":
+            return random_pick_probless(self.chr_list)
+        else:
+            return random_pick_probless(self.int_list)
 
 
 if __name__ == '__main__':
-    # items = ['a', 'b', 'c', 'd', 'e', 'f', 'g']
+    items = ['a', 'b', 'c', 'd', 'e', 'f', 'g']
     # prob_1 = [0.1, 0.2, 0.3, 0.1, 0.1, 0.15, 0.05]
     # prob_2 = [0.1, 0.2, 0.3, 0.1, 0.1, 0.15, 0.15]
     # prob_3 = [0.1, 0.2, 0.3, 0.1, 0.1, 0.15]
     # print(random_pick(items, None))
-    print(gen_random("int"), gen_random("char"))
+    print(get_randint(3,1))

@@ -33,7 +33,7 @@ conf_template = {
         "ORRN": 1.0
     },
     "repeat_min": 1,
-    "repeat_max": 10,
+    "repeat_max": 2,
     "specifications": {
         "random_picker": {
             "random_int_list": [0, 1, 2, 3, 5, 10, 20, 30, 40, 50, 100],
@@ -42,14 +42,80 @@ conf_template = {
     }
 }
 
-OILN = {
+OILN_1 = {
     "task_name": "Test02_OILN",
     "src_dir": "/home/alex/PycharmProjects/c-defectifier/exp_src/Test02_OILN",
-    "method": "freq",
+    "src_type": "files",
+    "sift_option": "",
+    "limit": 1,
     "defects": {
-        "OILN": 10
+        "OILN": 1.0
+    },
+    "repeat_min": 1,
+    "repeat_max": 3,
+    "specifications": {
+        "random_picker": {
+            "random_int_list": [0, 1, 2, 3, 5, 10, 20, 30, 40, 50, 100],
+            "random_chr_list": [chr(i) for i in range(128)]
+        },
+        "OILN": {
+
+        }
     }
 }
+
+OILN_2 = {
+    "task_name": "Test02_OILN",
+    "src_dir": "/home/alex/PycharmProjects/c-defectifier/exp_src/Test02_OILN",
+    "src_type": "files",
+    "sift_option": "",
+    "limit": 1,
+    "defects": {
+        "OILN": 1.0
+    },
+    "repeat_min": 1,
+    "repeat_max": 3,
+    "specifications": {
+        "random_picker": {
+            "random_int_list": [0, 1, 2, 3, 5, 10, 20, 30, 40, 50, 100],
+            "random_chr_list": [chr(i) for i in range(128)]
+        },
+        "OILN": {
+            "OILN_add_and": 0.1,
+            "OILN_add_or": 0.2,
+            "OILN_del_and": 0.1,
+            "OILN_del_or": 0.2,
+            "OILN_negate_cond": 0.4
+        }
+    }
+}
+
+OILN_3 = {
+    "task_name": "Test02_OILN",
+    "src_dir": "/home/alex/PycharmProjects/c-defectifier/exp_src/Test02_OILN",
+    "src_type": "files",
+    "sift_option": "",
+    "limit": 1,
+    "defects": {
+        "OILN_add_and": 0.1,
+        "OILN_add_or": 0.2,
+        "OILN_del_and": 0.1,
+        "OILN_del_or": 0.2,
+        "OILN_negate_cond": 0.4
+    },
+    "repeat_min": 1,
+    "repeat_max": 3,
+    "specifications": {
+        "random_picker": {
+            "random_int_list": [0, 1, 2, 3, 5, 10, 20, 30, 40, 50, 100],
+            "random_chr_list": [chr(i) for i in range(128)]
+        },
+        "OILN": {
+
+        }
+    }
+}
+
 
 SRIF = {
     "task_name": "Test03_SRIF",
@@ -131,7 +197,7 @@ def generate_experiment_config(task_name):
 
 
 if __name__ == '__main__':
-    task_name = "Test01_simple_try"
-    conf = conf_template
+    task_name = "Test02_OILN"
+    conf = OILN_2
     generate_experiment_config(task_name)
 

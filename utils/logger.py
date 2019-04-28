@@ -39,6 +39,17 @@ class Logger:
         }
         self.log_items.append(log_item)
 
+    def log_nothing(self):
+        timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+        log_item = {
+            "timestamp": timestamp,
+            "def_type": "nothing",
+            "parameters": {
+                "action": "no action"
+            }
+        }
+        self.log_items.append(log_item)
+
     def log_ORRN(self, position, current_op, replace_op):
         self.generic_op_logging("ORRN", position, current_op, replace_op)
 

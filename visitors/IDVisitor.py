@@ -2,16 +2,12 @@ from pycparser import c_ast
 
 
 class IDVisitor(c_ast.NodeVisitor):
-    def __init__(self, ast, mode, task_name):
+    def __init__(self, ast):
         """
 
         :param ast:
-        :param mode:
-        :param task_name:
         """
         self.ast = ast
-        self.mode = mode
-        self.task_name = task_name
         self.nodes = []
         self.names = []
 

@@ -2,8 +2,8 @@ from __future__ import print_function
 import os
 import sys
 
-from utils.fs_util import init_experiment_fs
-from utils.random_picker import random_pick
+from utils.fs_util import init_experiment_fs, generate_exp_output
+from utils.random_picker import random_pick, get_randint
 from pycparser import c_parser
 from defect.defectify import defectify
 from utils.logger import Logger
@@ -21,53 +21,42 @@ def drive(task_name):
     # initialize the experiment file system and fetch the config
     exp_cfg = init_experiment_fs(task_name)
     src_folder = exp_cfg["src_dir"]
-    method = exp_cfg["method"]
-    defects = exp_cfg["defects"].keys()
+    src_type = exp_cfg["src_type"]
+    defects = list(exp_cfg["defects"].keys())
+    prob = list(exp_cfg["defects"].values())
+    repeat_min = exp_cfg["repeat_min"]
+    repeat_max = exp_cfg["repeat_max"]
+    exp_spec_dict = exp_cfg["specifications"]
+    # instantiate some self-defined objects
     logger = Logger(task_name)
-    # in order to release the pressure of passing parameters,
-    # move the functionality of code reading from fs_util to exp_driver
-    file_list = os.listdir(src_folder)
-    # in 'prob' and 'freq', you do not need read all codes from the file_list
-    if method == "enum":
-        for item in file_list:
-            src_path = os.path.join(src_folder, item)
-            if os.path.isfile(src_path):
-                src_file = open(src_path, 'r')
-                code = src_file.read()
-                src_file.close()
-                parser = c_parser.CParser()
-                ast = parser.parse(code)
-                for defect in defects:
-                    defectify(ast, task_name, defect, "DEBUG", logger, None)
-    elif method == "prob":
-        number = exp_cfg["number"]
-        prob = exp_cfg["defects"].values()
-        for i in range(number):
-            item = random_pick(file_list, None)
-            src_path = os.path.join(src_folder, item)
-            if os.path.isfile(src_path):
-                src_file = open(src_path, 'r')
-                code = src_file.read()
-                src_file.close()
-                parser = c_parser.CParser()
-                ast = parser.parse(code)
-                defect = random_pick(defects, prob)
-                defectify(ast, task_name, defect, "RANDOM", logger, None)
-    elif method == "freq":
-        outer_count = 0
-        for defect, freq in exp_cfg["defects"].items():
-            for i in range(freq):
-                item = random_pick(file_list, None)
-                src_path = os.path.join(src_folder, item)
+    if src_type == "files":
+        # in order to release the pressure of passing parameters,
+        # move the functionality of code reading from fs_util to exp_driver
+        file_list = os.listdir(src_folder)
+        count = 0
+        for file in file_list:
+            src_path = os.path.join(src_folder, file)
+            for i in range(get_randint(repeat_min, repeat_max)):
+                count += 1
                 if os.path.isfile(src_path):
                     src_file = open(src_path, 'r')
                     code = src_file.read()
                     src_file.close()
                     parser = c_parser.CParser()
                     ast = parser.parse(code)
-                    outer_count += 1
-                    defectify(ast, task_name, defect, "RANDOM", logger, outer_count)
-    logger.write_log()
+                    defect = random_pick(defects, prob)
+                    success = defectify(ast, task_name, defect, logger, exp_spec_dict)
+                    if success:
+                        generate_exp_output(str(count) + ".c", task_name, ast)
+                    else:
+                        logger.log_nothing()
+            logger.write_log()
+    elif src_type == "db":
+        sift_option = exp_cfg["sift_option"]
+        limit = exp_cfg["limit"]
+        # access to database
+    else:
+        print("Err: Wrong source type.")
 
 
 def test():
@@ -83,11 +72,15 @@ def test():
     parser = c_parser.CParser()
     ast = parser.parse(code)
     logger = Logger("test")
-
-    defectify(ast, "test", "test", "RANDOM", logger, None)
+    exp_spec_dict = {
+        "OEDE": {
+            "from": '='
+        }
+    }
+    defectify(ast, "test", "test", logger, exp_spec_dict)
 
 
 if __name__ == '__main__':
-    task_name = "Test01_simple_try"
+    task_name = "Test02_OILN"
     drive(task_name)
     # test()
