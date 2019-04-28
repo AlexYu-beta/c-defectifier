@@ -42,6 +42,25 @@ conf_template = {
     }
 }
 
+ORRN_DB = {
+    "task_name": "Test01_simple_try",
+    "src_dir": "/home/alex/PycharmProjects/c-defectifier/dataset/c_data_ok.db",
+    "src_type": "db",
+    "sift_option": "",
+    "limit": 1000,
+    "defects": {
+        "ORRN": 1.0
+    },
+    "repeat_min": 1,
+    "repeat_max": 1,
+    "specifications": {
+        "random_picker": {
+            "random_int_list": [0, 1, 2, 3, 5, 10, 20, 30, 40, 50, 100],
+            "random_chr_list": [chr(i) for i in range(128)]
+        }
+    }
+}
+
 OILN_1 = {
     "task_name": "Test02_OILN",
     "src_dir": "/home/alex/PycharmProjects/c-defectifier/exp_src/Test02_OILN",
@@ -271,6 +290,6 @@ def generate_experiment_config(task_name):
 
 
 if __name__ == '__main__':
-    task_name = "Test08_OFPO"
-    conf = OFPO_1
+    task_name = "db_test"
+    conf = ORRN_DB
     generate_experiment_config(task_name)
