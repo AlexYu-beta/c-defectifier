@@ -12,6 +12,8 @@ from visitors.FuncCallVisitor import FuncCallVisitor
 from visitors.IDVisitor import IDVisitor
 from visitors.IfVisitor import IfVisitor
 from visitors.LabelVisitor import LabelVisitor
+from visitors.StatementsVisitor import StatementsVisitor
+from visitors.StatementVisitor import StatementVisitor
 from visitors.SwitchVisitor import SwitchVisitor
 from visitors.TernaryOpVisitor import TernaryOpVisitor
 from visitors.TypeDeclVisitor import TypeDeclVisitor
@@ -713,263 +715,53 @@ def defectify_SRIF(ast, task_name, logger, exp_spec_dict):
     return func(ast, task_name, logger, exp_spec_dict)
 
 
-#
-# def defectify_SDFN(ast, task_name, mode, logger, outer_count):
-#     """
-#
-#     :param ast:
-#     :param task_name:
-#     :param mode:
-#     :param logger:
-#     :param outer_count:
-#     :return:
-#     """
-#     available_func_calls = {}
-#     case_visitor = CaseVisitor(ast, mode, task_name)
-#     case_visitor.visit(ast)
-#     case_nodes = case_visitor.get_nodelist()
-#     for case_node in case_nodes:
-#         for stmt in case_node.stmts:
-#             if type(stmt) == c_ast.FuncCall:
-#                 available_func_calls[case_node] = "case"
-#                 break
-#     compound_visitor = CompoundVisitor(ast, mode, task_name)
-#     compound_visitor.visit(ast)
-#     compound_nodes = compound_visitor.get_nodelist()
-#     for compound_node in compound_nodes:
-#         for block_item in compound_node.block_items:
-#             if type(block_item) == c_ast.FuncCall:
-#                 available_func_calls[compound_node] = "compound"
-#                 break
-#     default_visitor = DefaultVisitor(ast, mode, task_name)
-#     default_visitor.visit(ast)
-#     default_nodes = default_visitor.get_nodelist()
-#     for default_node in default_nodes:
-#         for stmt in default_node.stmts:
-#             if type(stmt) == c_ast.FuncCall:
-#                 available_func_calls[default_node] = "default"
-#                 break
-#     dowhile_visitor = DoWhileVisitor(ast, mode, task_name)
-#     dowhile_visitor.visit(ast)
-#     dowhile_nodes = dowhile_visitor.get_nodelist()
-#     for dowhile_node in dowhile_nodes:
-#         if type(dowhile_node.stmt) == c_ast.FuncCall:
-#             available_func_calls[dowhile_node] = "dowhile"
-#     for_visitor = ForVisitor(ast, mode, task_name)
-#     for_visitor.visit(ast)
-#     for_nodes = for_visitor.get_nodelist()
-#     for for_node in for_nodes:
-#         if type(for_node.stmt) == c_ast.FuncCall:
-#             available_func_calls[for_node] = "for"
-#     if_visitor = IfVisitor(ast, mode, task_name)
-#     if_visitor.visit(ast)
-#     if_nodes = if_visitor.get_nodelist()
-#     for if_node in if_nodes:
-#         available_func_calls[if_node] = ""
-#         if type(if_node.iftrue) == c_ast.FuncCall:
-#             available_func_calls[if_node] += "if.true"
-#         if type(if_node.iffalse) == c_ast.FuncCall:
-#             available_func_calls[if_node] += "if.false"
-#     label_visitor = LabelVisitor(ast, mode, task_name)
-#     label_visitor.visit(ast)
-#     label_nodes = label_visitor.get_nodelist()
-#     for label_node in label_nodes:
-#         if type(label_node.stmt) == c_ast.FuncCall:
-#             available_func_calls[label_node] = "label"
-#     switch_visitor = SwitchVisitor(ast, mode, task_name)
-#     switch_visitor.visit(ast)
-#     switch_nodes = switch_visitor.get_nodelist()
-#     for switch_node in switch_nodes:
-#         if type(switch_node.stmt) == c_ast.FuncCall:
-#             available_func_calls[switch_node] = "switch"
-#     while_visitor = WhileVisitor(ast, mode, task_name)
-#     while_visitor.visit(ast)
-#     while_nodes = while_visitor.get_nodelist()
-#     for while_node in while_nodes:
-#         if type(while_node.stmt) == c_ast.FuncCall:
-#             available_func_calls[while_node] = "while"
-#     # filter some unavailable cases
-#     available_func_calls = {key: value for key, value in available_func_calls.items() if value != ""}
-#
-#     if mode == "RANDOM":
-#         target_node, target_node_type = random_pick(list(available_func_calls.items()), None)
-#         if target_node_type == "case" or target_node_type == "default":
-#             func_calls = []
-#             for stmt in target_node.stmts:
-#                 if type(stmt) == c_ast.FuncCall:
-#                     func_calls.append(stmt)
-#             func_call = random_pick(func_calls, None)
-#             index = target_node.stmts.index(func_call)
-#             target_node.stmts.remove(func_call)
-#             if outer_count:
-#                 generate_exp_output("test_SDFN_{}_{}.c".format(target_node_type, outer_count), task_name, ast)
-#             else:
-#                 generate_exp_output("test_SDFN_{}_{}.c".format(target_node_type, 0), task_name, ast)
-#             logger.log_SDFN(func_call.coord, target_node_type)
-#             # retrieve ast
-#             target_node.stmts.insert(index, func_call)
-#         elif target_node_type == "compound":
-#             func_calls = []
-#             for block_item in target_node.block_items:
-#                 if type(block_item) == c_ast.FuncCall:
-#                     func_calls.append(block_item)
-#             func_call = random_pick(func_calls, None)
-#             index = target_node.block_items.index(func_call)
-#             target_node.block_items.remove(func_call)
-#             if outer_count:
-#                 generate_exp_output("test_SDFN_{}_{}.c".format(target_node_type, outer_count), task_name, ast)
-#             else:
-#                 generate_exp_output("test_SDFN_{}_{}.c".format(target_node_type, 0), task_name, ast)
-#             logger.log_SDFN(func_call.coord, target_node_type)
-#             # retrieve ast
-#             target_node.block_items.insert(index, func_call)
-#         elif target_node_type == "dowhile" or target_node_type == "for" or target_node_type == "label" or target_node_type == "switch" or target_node_type == "while":
-#             func_call = target_node.stmt
-#             target_node.stmt = c_ast.EmptyStatement(coord=func_call.coord)
-#             if outer_count:
-#                 generate_exp_output("test_SDFN_{}_{}.c".format(target_node_type, outer_count), task_name, ast)
-#             else:
-#                 generate_exp_output("test_SDFN_{}_{}.c".format(target_node_type, 0), task_name, ast)
-#             logger.log_SDFN(func_call.coord, target_node_type)
-#             # retrieve ast
-#             target_node.stmt = func_call
-#         elif target_node_type == "if.true":
-#             func_call = target_node.iftrue
-#             target_node.iftrue = c_ast.EmptyStatement(coord=func_call.coord)
-#             if outer_count:
-#                 generate_exp_output("test_SDFN_{}_{}.c".format(target_node_type, outer_count), task_name, ast)
-#             else:
-#                 generate_exp_output("test_SDFN_{}_{}.c".format(target_node_type, 0), task_name, ast)
-#             logger.log_SDFN(func_call.coord, target_node_type)
-#             # retrieve ast
-#             target_node.iftrue = func_call
-#
-#         elif target_node_type == "if.false":
-#             func_call = target_node.iffalse
-#             target_node.iffalse = c_ast.EmptyStatement(coord=func_call.coord)
-#             if outer_count:
-#                 generate_exp_output("test_SDFN_{}_{}.c".format(target_node_type, outer_count), task_name, ast)
-#             else:
-#                 generate_exp_output("test_SDFN_{}_{}.c".format(target_node_type, 0), task_name, ast)
-#             logger.log_SDFN(func_call.coord, target_node_type)
-#             # retrieve ast
-#             target_node.iffalse = func_call
-#         elif target_node_type == "if.trueif.false" or target_node_type == "if.falseif.true":
-#             flag = random_pick([True, False], None)
-#             if flag:
-#                 func_call = target_node.iftrue
-#                 target_node.iftrue = c_ast.EmptyStatement(coord=func_call.coord)
-#                 if outer_count:
-#                     generate_exp_output("test_SDFN_{}_{}.c".format(target_node_type, outer_count), task_name, ast)
-#                 else:
-#                     generate_exp_output("test_SDFN_{}_{}.c".format(target_node_type, 0), task_name, ast)
-#                 logger.log_SDFN(func_call.coord, target_node_type)
-#                 # retrieve ast
-#                 target_node.iftrue = func_call
-#             else:
-#                 func_call = target_node.iffalse
-#                 target_node.iffalse = c_ast.EmptyStatement(coord=func_call.coord)
-#                 if outer_count:
-#                     generate_exp_output("test_SDFN_{}_{}.c".format(target_node_type, outer_count), task_name, ast)
-#                 else:
-#                     generate_exp_output("test_SDFN_{}_{}.c".format(target_node_type, 0), task_name, ast)
-#                 logger.log_SDFN(func_call.coord, target_node_type)
-#                 # retrieve ast
-#                 target_node.iffalse = func_call
-#         else:
-#             print("Err: Type: " + target_node_type + " not declared.")
-#     elif mode == "DEBUG":
-#         count = 0
-#         for target_node, target_node_type in available_func_calls.items():
-#             if target_node_type == "case" or target_node_type == "default":
-#                 func_calls = []
-#                 for stmt in target_node.stmts:
-#                     if type(stmt) == c_ast.FuncCall:
-#                         func_calls.append(stmt)
-#                 for func_call in func_calls:
-#                     count += 1
-#                     index = target_node.stmts.index(func_call)
-#                     target_node.stmts.remove(func_call)
-#                     if outer_count:
-#                         generate_exp_output("test_SDFN_{}_{}.c".format(target_node_type, outer_count), task_name, ast)
-#                     else:
-#                         generate_exp_output("test_SDFN_{}_{}.c".format(target_node_type, count), task_name, ast)
-#                     logger.log_SDFN(func_call.coord, target_node_type)
-#                     # retrieve ast
-#                     target_node.stmts.insert(index, func_call)
-#             elif target_node_type == "compound":
-#                 func_calls = []
-#                 for block_item in target_node.block_items:
-#                     if type(block_item) == c_ast.FuncCall:
-#                         func_calls.append(block_item)
-#                 for func_call in func_calls:
-#                     count += 1
-#                     index = target_node.block_items.index(func_call)
-#                     target_node.block_items.remove(func_call)
-#                     if outer_count:
-#                         generate_exp_output("test_SDFN_{}_{}.c".format(target_node_type, outer_count), task_name, ast)
-#                     else:
-#                         generate_exp_output("test_SDFN_{}_{}.c".format(target_node_type, count), task_name, ast)
-#                     logger.log_SDFN(func_call.coord, target_node_type)
-#                     # retrieve ast
-#                     target_node.block_items.insert(index, func_call)
-#             elif target_node_type == "dowhile" or target_node_type == "for" or target_node_type == "label" or target_node_type == "switch" or target_node_type == "while":
-#                 count += 1
-#                 func_call = target_node.stmt
-#                 target_node.stmt = c_ast.EmptyStatement(coord=func_call.coord)
-#                 if outer_count:
-#                     generate_exp_output("test_SDFN_{}_{}.c".format(target_node_type, outer_count), task_name, ast)
-#                 else:
-#                     generate_exp_output("test_SDFN_{}_{}.c".format(target_node_type, count), task_name, ast)
-#                 logger.log_SDFN(func_call.coord, target_node_type)
-#                 # retrieve ast
-#                 target_node.stmt = func_call
-#             elif target_node_type == "if.true":
-#                 count += 1
-#                 func_call = target_node.iftrue
-#                 target_node.iftrue = c_ast.EmptyStatement(coord=func_call.coord)
-#                 if outer_count:
-#                     generate_exp_output("test_SDFN_{}_{}.c".format(target_node_type, outer_count), task_name, ast)
-#                 else:
-#                     generate_exp_output("test_SDFN_{}_{}.c".format(target_node_type, count), task_name, ast)
-#                 logger.log_SDFN(func_call.coord, target_node_type)
-#                 # retrieve ast
-#                 target_node.iftrue = func_call
-#
-#             elif target_node_type == "if.false":
-#                 count += 1
-#                 func_call = target_node.iffalse
-#                 target_node.iffalse = c_ast.EmptyStatement(coord=func_call.coord)
-#                 if outer_count:
-#                     generate_exp_output("test_SDFN_{}_{}.c".format(target_node_type, outer_count), task_name, ast)
-#                 else:
-#                     generate_exp_output("test_SDFN_{}_{}.c".format(target_node_type, count), task_name, ast)
-#                 logger.log_SDFN(func_call.coord, target_node_type)
-#                 # retrieve ast
-#                 target_node.iffalse = func_call
-#             elif target_node_type == "if.trueif.false" or target_node_type == "if.falseif.true":
-#                 count += 1
-#                 func_call = target_node.iftrue
-#                 target_node.iftrue = c_ast.EmptyStatement(coord=func_call.coord)
-#                 if outer_count:
-#                     generate_exp_output("test_SDFN_{}_{}.c".format(target_node_type, outer_count), task_name, ast)
-#                 else:
-#                     generate_exp_output("test_SDFN_{}_{}.c".format(target_node_type, count), task_name, ast)
-#                 logger.log_SDFN(func_call.coord, target_node_type)
-#                 # retrieve ast
-#                 target_node.iftrue = func_call
-#                 count += 1
-#                 func_call = target_node.iffalse
-#                 target_node.iffalse = c_ast.EmptyStatement(coord=func_call.coord)
-#                 if outer_count:
-#                     generate_exp_output("test_SDFN_{}_{}.c".format(target_node_type, outer_count), task_name, ast)
-#                 else:
-#                     generate_exp_output("test_SDFN_{}_{}.c".format(target_node_type, count), task_name, ast)
-#                 logger.log_SDFN(func_call.coord, target_node_type)
-#                 # retrieve ast
-#                 target_node.iffalse = func_call
-#             else:
-#                 print("Err: Type: " + target_node_type + " not declared.")
+def defectify_SDFN(ast, task_name, logger, exp_spec_dict):
+    """
+
+    :param ast:
+    :param task_name:
+    :param logger:
+    :param exp_spec_dict:
+    :return:
+    """
+    statement_visitor = StatementVisitor(ast)
+    statement_visitor.visit(ast)
+    stmt_list = statement_visitor.get_nodelist()
+    statements_visitor = StatementsVisitor(ast)
+    statements_visitor.visit(ast)
+    stmts_list = statements_visitor.get_nodelist()
+    available_nodes = []
+    for stmt_node in stmt_list:
+        if type(stmt_node.stmt) == c_ast.FuncCall:
+            available_nodes.append(stmt_node)
+    for stmts_node in stmts_list:
+        for stmt in stmts_node.stmts:
+            if type(stmt) == c_ast.FuncCall:
+                available_nodes.append(stmts_node)
+                break
+    if len(available_nodes) == 0:
+        print("Warning: No function call can be deleted.")
+        return False
+    target_node = random_pick_probless(available_nodes)
+    if hasattr(target_node, "stmt"):
+        func_call = target_node.stmt
+        target_node.stmt = c_ast.EmptyStatement(coord=func_call.coord)
+        logger.log_SDFN(func_call.coord, "delete function call from statement")
+        # retrieve ast
+        # target_node.stmt = func_call
+    else:
+        func_calls = []
+        for stmt in target_node.stmts:
+            if type(stmt) == c_ast.FuncCall:
+                func_calls.append(stmt)
+        func_call = random_pick_probless(func_calls)
+        # index = target_node.stmts.index(func_call)
+        target_node.stmts.remove(func_call)
+        logger.log_SDFN(func_call.coord, "delete function call from statements")
+        # retrieve ast
+        # target_node.block_items.insert(index, func_call)
+    return True
+
 #
 #
 # def defectify_OAIS(ast, task_name, mode, logger, outer_count):
