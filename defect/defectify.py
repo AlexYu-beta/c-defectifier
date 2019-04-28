@@ -21,7 +21,7 @@ from visitors.WhileVisitor import WhileVisitor
 
 
 from utils.fs_util import generate_exp_output
-from utils.random_picker import random_pick, random_pick_probless, RandomPicker
+from utils.random_picker import random_pick, random_pick_probless, RandomPicker, get_randint
 from utils.ast_util import parse_fileAST_exts
 from pycparser import c_ast, c_generator
 
@@ -886,64 +886,44 @@ def defectify_STYP(ast, task_name, logger, exp_spec_dict):
     # var_decl.type.type = c_ast.IdentifierType(names=[temp])
     return True
 
-#
-#
-# def defectify_SMOV(ast, task_name, mode, logger, outer_count):
-#     """
-#
-#     :param ast:
-#     :param task_name:
-#     :param mode:
-#     :param logger:
-#     :param outer_count:
-#     :return:
-#     """
-#     available_stmts = []
-#     case_visitor = CaseVisitor(ast, mode, task_name)
-#     case_visitor.visit(ast)
-#     case_nodes = case_visitor.get_nodelist()
-#     for case_node in case_nodes:
-#         case_node.stmts = list(filter(lambda x: type(x) != c_ast.Decl, case_node.stmts))
-#         if len(case_node.stmts) > 1:
-#             available_stmts.append(case_node.stmts)
-#     compound_visitor = CompoundVisitor(ast, mode, task_name)
-#     compound_visitor.visit(ast)
-#     compound_nodes = compound_visitor.get_nodelist()
-#     for compound_node in compound_nodes:
-#         compound_node.block_items = list(filter(lambda x: type(x) != c_ast.Decl, compound_node.block_items))
-#         if len(compound_node.block_items) > 1:
-#             available_stmts.append(compound_node.block_items)
-#     default_visitor = DefaultVisitor(ast, mode, task_name)
-#     default_visitor.visit(ast)
-#     default_nodes = default_visitor.get_nodelist()
-#     for default_node in default_nodes:
-#         default_node.stmts = list(filter(lambda x: type(x) != c_ast.Decl, default_node.stmts))
-#         if len(default_node.stmts) > 1:
-#             available_stmts.append(default_node.stmts)
-#     if mode == "RANDOM":
-#         target_stmts = random_pick(available_stmts, None)
-#         length = len(target_stmts)
-#         distance = random_pick(range(1, length), None)
-#         stmt_1 = random_pick(target_stmts, None)
-#         index_1 = target_stmts.index(stmt_1)
-#         index_2 = (index_1 + distance) % length
-#         temp = target_stmts[index_1]
-#         target_stmts[index_1] = target_stmts[index_2]
-#         target_stmts[index_2] = temp
-#         if outer_count:
-#             generate_exp_output("test_SMOV_{}.c".format(outer_count), task_name, ast)
-#         else:
-#             generate_exp_output("test_SMOV_{}.c".format(0), task_name, ast)
-#         logger.log_SMOV(target_stmts[index_1].coord, target_stmts[index_2].coord)
-#         # retrieve ast
-#         temp = target_stmts[index_1]
-#         target_stmts[index_1] = target_stmts[index_2]
-#         target_stmts[index_2] = temp
-#
-#     elif mode == "DEBUG":
-#         # maybe not feasible for listing all cases
-#         pass
-#
+
+def defectify_SMOV(ast, task_name, logger, exp_spec_dict):
+    """
+
+    :param ast:
+    :param task_name:
+    :param logger:
+    :param exp_spec_dict:
+    :return:
+    """
+    statements_visitor = StatementsVisitor(ast)
+    statements_visitor.visit(ast)
+    stmts_nodes = statements_visitor.get_nodelist()
+    available_stmts = []
+    for stmts_node in stmts_nodes:
+        stmts_node.stmts = list(filter(lambda x: type(x) != c_ast.Decl, stmts_node.stmts))
+        if len(stmts_node.stmts) > 1:
+            available_stmts.append(stmts_node.stmts)
+    if len(available_stmts) == 0:
+        print("Warning: No available statement block found.")
+        return False
+    target_stmts = random_pick_probless(available_stmts)
+    length = len(target_stmts)
+    distance = get_randint(1, length - 1)
+    stmt_1 = random_pick_probless(target_stmts)
+    index_1 = target_stmts.index(stmt_1)
+    index_2 = (index_1 + distance) % length
+    temp = target_stmts[index_1]
+    target_stmts[index_1] = target_stmts[index_2]
+    target_stmts[index_2] = temp
+    logger.log_SMOV(target_stmts[index_1].coord, target_stmts[index_2].coord)
+    # retrieve ast
+    # temp = target_stmts[index_1]
+    # target_stmts[index_1] = target_stmts[index_2]
+    # target_stmts[index_2] = temp
+    return True
+
+
 #
 # def defectify_OFPO(ast, task_name, mode, logger, outer_count):
 #     """

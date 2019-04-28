@@ -16,6 +16,11 @@ void func2(int a)
 
 int main(int argc, char *argv[])
 {
+  int i;
+  int j;
+  int n;
+  int temp;
+  int sum = 0;
   scanf("%d\n", &n);
   for (i = 0; i < n; i++)
   {
@@ -32,8 +37,8 @@ int main(int argc, char *argv[])
       func2(sum);
 
     case 'Y':
-      sum--;
       break;
+      sum--;
 
     default:
       func2(sum);
@@ -52,14 +57,15 @@ int main(int argc, char *argv[])
 
   }
 
-  a_label:
-  printf("%d\n", sum);
-
-  printf("%d\n", sum);
+  int h = 0;
   do
   {
     printf("%d\n", h);
   }
   while (h < 0);
+  printf("%d\n", sum);
+  a_label:
+  printf("%d\n", sum);
+
 }
 

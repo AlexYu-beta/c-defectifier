@@ -81,6 +81,6 @@ def test():
 
 
 if __name__ == '__main__':
-    task_name = "Test06_STYP"
+    task_name = "Test07_SMOV"
     drive(task_name)
     # test()
