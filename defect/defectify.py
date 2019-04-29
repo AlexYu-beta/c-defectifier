@@ -18,7 +18,13 @@ generator = c_generator.CGenerator()
 
 def defectify_ORRN(ast, task_name, logger, exp_spec_dict):
     """
-
+    {
+        available_nodes <- visit_nodes_with_condition(root)
+        node <- random_pick(available_nodes)
+        replace_ops <- {all_relation_operators} - node.operator
+        replace_op <- random_pick(replace_ops)
+        node.operator <- replace_op
+    }
     :param ast:
     :param task_name:
     :param logger:
@@ -48,7 +54,24 @@ def defectify_ORRN(ast, task_name, logger, exp_spec_dict):
 
 def defectify_OILN_add_and(ast, task_name, logger, exp_spec_dict):
     """
-
+    {
+        func <- random_pick(global_functions)
+        if_nodes <- visit_if_nodes(func)
+        if_node <- random_pick(if_nodes)
+        identifiers <- visit_identifiers(if_node.condition)
+        identifier <- random_pick(identifiers)
+        identifier_type <- typeof(identifier)
+        new_node <- BinaryOp{
+            op <- random_pick({relation operators})
+            left <- identifier
+            right <- get_random_value_by_type(identifier_type)
+        }
+        add_left <- random_pick(True, False)
+        if add_left:
+            ast.add(if_node.left, new_node, op=&&)
+        else:
+            ast.add(if_node.right, new_node, op=&&)
+    }
     :param ast:
     :param task_name:
     :param logger:
@@ -124,7 +147,24 @@ def defectify_OILN_add_and(ast, task_name, logger, exp_spec_dict):
 
 def defectify_OILN_add_or(ast, task_name, logger, exp_spec_dict):
     """
-
+    {
+        func <- random_pick(global_functions)
+        if_nodes <- visit_if_nodes(func)
+        if_node <- random_pick(if_nodes)
+        identifiers <- visit_identifiers(if_node.condition)
+        identifier <- random_pick(identifiers)
+        identifier_type <- typeof(identifier)
+        new_node <- BinaryOp{
+            op <- random_pick({relation operators})
+            left <- identifier
+            right <- get_random_value_by_type(identifier_type)
+        }
+        add_left <- random_pick(True, False)
+        if add_left:
+            ast.add(if_node.left, new_node, op=||)
+        else:
+            ast.add(if_node.right, new_node, op=||)
+    }
     :param ast:
     :param task_name:
     :param logger:
@@ -200,7 +240,16 @@ def defectify_OILN_add_or(ast, task_name, logger, exp_spec_dict):
 
 def defectify_OILN_del_and(ast, task_name, logger, exp_spec_dict):
     """
-
+    {
+        func <- random_pick(global_functions)
+        if_nodes <- visit_if_nodes(func)
+        if_node <- random_pick(if_nodes)
+        delete_left <- random_pick(True, False)
+        if delete_left:
+            ast.delete(if_node.left)
+        else:
+            ast.delete(if_node.right)
+    }
     :param ast:
     :param task_name:
     :param logger:
@@ -237,7 +286,16 @@ def defectify_OILN_del_and(ast, task_name, logger, exp_spec_dict):
 
 def defectify_OILN_del_or(ast, task_name, logger, exp_spec_dict):
     """
-
+    {
+        func <- random_pick(global_functions)
+        if_nodes <- visit_if_nodes(func)
+        if_node <- random_pick(if_nodes)
+        delete_left <- random_pick(True, False)
+        if delete_left:
+            ast.delete(if_node.left)
+        else:
+            ast.delete(if_node.right)
+    }
     :param ast:
     :param task_name:
     :param logger:
@@ -269,7 +327,15 @@ def defectify_OILN_del_or(ast, task_name, logger, exp_spec_dict):
 
 def defectify_OILN_negate_cond(ast, task_name, logger, exp_spec_dict):
     """
-
+    {
+        func <- random_pick(global_functions)
+        if_nodes <- visit_if_nodes(func)
+        if_node <- random_pick(if_nodes)
+        if if_node.condition.left is UnaryOp(!):
+            if_node.condition.left <- UnaryOp(!).get_expression(if_node.condition.left)
+        else:
+            if_node.condition.left <- UnaryOp(!).set_expression(if_node.condition.left)
+    }
     :param ast:
     :param task_name:
     :param logger:
@@ -332,7 +398,17 @@ def defectify_OILN(ast, task_name, logger, exp_spec_dict):
 
 def defectify_SRIF_replace_var(ast, task_name, logger, exp_spec_dict):
     """
-
+    {
+        func <- random_pick(global_functions)
+        if_nodes <- visit_if_nodes(func)
+        if_node <- random_pick(if_nodes)
+        identifiers <- visit_identifiers(if_node) + global_identifiers
+        target_identifier <- random_pick(identifiers)
+        identifiers_remain <- identifiers.remove(target_identifier)
+        filter(element.type == target_identifier.type, identifiers_remain)
+        matched_identifier <- random_pick(identifiers_remain)
+        target_identifier.name <- matched_identifier.name
+    }
     :param ast:
     :param task_name:
     :param logger:
@@ -394,7 +470,26 @@ def defectify_SRIF_replace_var(ast, task_name, logger, exp_spec_dict):
 
 def defectify_SRIF_to_expr(ast, task_name, logger, exp_spec_dict):
     """
-
+    {
+        func <- random_pick(global_functions)
+        if_nodes <- visit_if_nodes(func)
+        if_node <- random_pick(if_nodes)
+        identifiers <- visit_identifiers(if_node) + global_identifiers
+        target_identifier <- random_pick(identifiers)
+        binary_ops <- visit_binary_operations(if_node)
+        new_node <- BinaryOp{
+            op <- random_pick({arithmetic operators})
+            left <- target_identifier
+            right <- get_random_value_by_type(target_identifier.type)
+        }
+        for binary_op in binary_ops:
+            if binary_op.left == target_identifier:
+                binary_op.left <- new_node
+                break
+            if binary_op.right == target_identifier:
+                binary_op.right <- new_node
+                break
+    }
     :param ast:
     :param task_name:
     :param logger:
@@ -479,7 +574,31 @@ def defectify_SRIF_to_expr(ast, task_name, logger, exp_spec_dict):
 
 def defectify_SRIF_wrap_func_call(ast, task_name, logger, exp_spec_dict):
     """
+    {
+        func <- random_pick(global_functions)
+        if_nodes <- visit_if_nodes(func)
+        if_node <- random_pick(if_nodes)
+        identifiers <- visit_identifiers(if_node) + global_identifiers
+        target_identifier <- random_pick(identifiers)
+        wrappable_functions = filter(target_identifier.type in element.params.types()
+            and target_identifier.type == element.return_type, global_functions)
+        func_to_wrap = random_pick(wrappable_functions)
+        for param_item in func_to_wrap.params():
+            if param_item.type == target_identifier.type:
+                new_param.append(random_pick(target_identifier, get_random_value_by_type(target_identifier.type)))
+            else:
+                new_param.append(get_random_value_by_type(param_item.type))
 
+        binary_ops <- visit_binary_operations(if_node)
+        new_node <- FuncCall(func_to_wrap, param=new_param)
+        for binary_op in binary_ops:
+            if binary_op.left == target_identifier:
+                binary_op.left <- new_node
+                break
+            if binary_op.right == target_identifier:
+                binary_op.right <- new_node
+                break
+    }
     :param ast:
     :param task_name:
     :param logger:
@@ -578,7 +697,29 @@ def defectify_SRIF_wrap_func_call(ast, task_name, logger, exp_spec_dict):
 
 def defectify_SRIF_unwrap_func_call(ast, task_name, logger, exp_spec_dict):
     """
-
+    {
+        func <- random_pick(global_functions)
+        if_nodes <- visit_if_nodes(func)
+        if_node <- random_pick(if_nodes)
+        identifiers <- visit_identifiers(if_node) + global_identifiers
+        target_identifier <- random_pick(identifiers)
+        wrappable_functions = filter(target_identifier.type in element.params.types()
+            and target_identifier.type == element.return_type, global_functions)
+        function_calls <- visit_function_calls(func)
+        for function_call in function_calls:
+            if function_call is wrappable and target_identifier in function_call.params():
+                unwrappable_function_call <- function_call
+                break
+        binary_ops <- visit_binary_operations(if_node)
+        new_node <- ID(target_identifier)
+        for binary_op in binary_ops:
+            if binary_op.left == unwrappable_function_call:
+                binary_op.left <- new_node
+                break
+            if binary_op.right == unwrappable_function_call:
+                binary_op.right <- new_node
+                break
+    }
     :param ast:
     :param task_name:
     :param logger:
@@ -703,7 +844,15 @@ def defectify_SRIF(ast, task_name, logger, exp_spec_dict):
 
 def defectify_SDFN(ast, task_name, logger, exp_spec_dict):
     """
-
+    {
+        statement_nodes <- visit_statements(root)
+        filter(element.type == function_call or function call in element, statement_nodes)
+        target_node <- random_pick(statement_nodes)
+        if target_node.type == function_call:
+            target_node <- empty_statement
+        else:
+            target_node.find(function_call).remove()
+    }
     :param ast:
     :param task_name:
     :param logger:
