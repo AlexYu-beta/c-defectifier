@@ -31,3 +31,22 @@ values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 
 QUERY_ALL = r'''
 select t.* from submit t'''
+
+DROP_DEFECTIFY = r'''
+drop table defectify;'''
+
+CREATE_DEFECTIFY = r'''
+create table defectify
+(
+  id                TEXT
+    primary key,
+  submit_id         TEXT,
+  code              TEXT,
+  gen_code          TEXT
+);
+'''
+
+INSERT_DEFECTIFY = r'''
+insert into defectify(id, submit_id, code, gen_code)
+values (?,?,?,?);
+'''

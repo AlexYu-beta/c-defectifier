@@ -24,7 +24,7 @@ int main (int argc, char *argv[])
     }
     if(func(sum)>test)
     {
-        if(sum>30 && sum<40)
+        if(sum>30 && T<40)
         {
             sum-=10;
         }

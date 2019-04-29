@@ -2,6 +2,7 @@ import os
 import shutil
 import json
 from pycparser import c_generator
+from utils.code_util import construct_program
 
 
 def get_config():
@@ -28,15 +29,17 @@ def get_config():
 config_dict = get_config()
 
 
-def gen_c_from_ast(ast, target_path):
+def gen_c_from_ast(ast, target_path, headers):
     """
     generate c code from ast
     :param ast:             the defectified ast
-    :param target_path:      target C path
+    :param target_path:     target C path
+    :param headers          code of c headers
     :return:
     """
     generator = c_generator.CGenerator()
     result = generator.visit(ast)
+    result = construct_program(headers, result)
     target_file = open(target_path, 'w')
     target_file.write(result)
     target_file.close()
@@ -103,16 +106,30 @@ def init_experiment_fs(task_name):
     return exp_cfg
 
 
-def generate_exp_output(file_name, task_name, ast):
+def generate_exp_output_db(ast, headers):
+    """
+
+    :param ast:
+    :param headers:
+    :return:
+    """
+    generator = c_generator.CGenerator()
+    result = generator.visit(ast)
+    result = construct_program(headers, result)
+    return result
+
+
+def generate_exp_output(file_name, task_name, ast, headers):
     """
     find the location of outputs and generate c code
     :param file_name:               name of c file to generate
     :param task_name:               name of the experiment name
     :param ast:                     ast structure
+    :param headers                  c code of headers
     :return:
     """
     output_path = config_dict["exp_output_path"] + "/" + task_name + "/" + file_name
-    gen_c_from_ast(ast, output_path)
+    gen_c_from_ast(ast, output_path, headers)
 
 
 def gen_exp_cfg(task_name, cfg_dict):

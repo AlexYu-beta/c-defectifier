@@ -1,26 +1,12 @@
-from visitors.AssignmentVisitor import AssignmentVisitor
 from visitors.BinaryOpVisitor import BinaryOpVisitor
-from visitors.CaseVisitor import CaseVisitor
-from visitors.CompoundVisitor import CompoundVisitor
 from visitors.ConditionVisitor import ConditionVisitor
-from visitors.ConstantVisitor import ConstantVisitor
 from visitors.DeclVisitor import DeclVisitor
-from visitors.DefaultVisitor import DefaultVisitor
-from visitors.DoWhileVisitor import DoWhileVisitor
-from visitors.ForVisitor import ForVisitor
 from visitors.FuncCallVisitor import FuncCallVisitor
 from visitors.IDVisitor import IDVisitor
 from visitors.IfVisitor import IfVisitor
-from visitors.LabelVisitor import LabelVisitor
 from visitors.StatementsVisitor import StatementsVisitor
 from visitors.StatementVisitor import StatementVisitor
-from visitors.SwitchVisitor import SwitchVisitor
-from visitors.TernaryOpVisitor import TernaryOpVisitor
 from visitors.TypeDeclVisitor import TypeDeclVisitor
-from visitors.WhileVisitor import WhileVisitor
-
-
-from utils.fs_util import generate_exp_output
 from utils.random_picker import random_pick, random_pick_probless, RandomPicker, get_randint
 from utils.ast_util import parse_fileAST_exts
 from pycparser import c_ast, c_generator
@@ -43,7 +29,7 @@ def defectify_ORRN(ast, task_name, logger, exp_spec_dict):
     condition_visitor.generic_visit(ast)
     # 1. find out all the nodes with 'cond' as one of the attributes
     nodelist = condition_visitor.get_nodelist()
-    available_node_list = [node for node in nodelist if node.cond.op in c_relational_binary_operator_set]
+    available_node_list = [node for node in nodelist if type(node.cond) == c_ast.BinaryOp and node.cond.op in c_relational_binary_operator_set]
     if len(available_node_list) == 0:
         print("Warning: no available node can be defectified with ORRN.")
         return False
@@ -985,7 +971,6 @@ def defectify_OFPO(ast, task_name, logger, exp_spec_dict):
     return True
 
 
-
 def defectify_test(ast, task_name, logger, exp_spec_dict):
     """
     test
@@ -996,7 +981,7 @@ def defectify_test(ast, task_name, logger, exp_spec_dict):
     :param outer_count:
     :return:
     """
-    print("testing OILN")
+    print(ast)
 
 
 def defectify(ast, task_name, defectify_type, logger, exp_spec_dict):

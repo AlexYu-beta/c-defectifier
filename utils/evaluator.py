@@ -18,6 +18,7 @@ def get_log_info(task_name):
     log_list = load_dict["log_list"]
     for log_item in log_list:
         print(log_item)
+    print(len([log_item for log_item in log_list if log_item['def_type'] != "nothing"]))
 
 
 def evaluate(task_name):
@@ -30,4 +31,4 @@ def evaluate(task_name):
 
 
 if __name__ == '__main__':
-    evaluate("Test02_OILN")
+    evaluate("db_test")
