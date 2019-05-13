@@ -90,7 +90,7 @@ OILN_1_DB = {
     "sift_option": "",
     "limit": 1000,
     "defects": {
-        "OILN_add_and": 1.0
+        "OILN": 1.0
     },
     "repeat_min": 1,
     "repeat_max": 3,
@@ -99,9 +99,7 @@ OILN_1_DB = {
             "random_int_list": [0, 1, 2, 3, 5, 10, 20, 30, 40, 50, 100],
             "random_chr_list": [chr(i) for i in range(128)]
         },
-        "OILN": {
-
-        }
+        "OILN": {}
     }
 }
 

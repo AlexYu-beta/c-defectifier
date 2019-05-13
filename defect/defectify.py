@@ -89,13 +89,16 @@ def defectify_OILN_add_and(ast, task_name, logger, exp_spec_dict):
     func = random_pick_probless(global_funcs)
     condition_visitor = ConditionVisitor(func)
     condition_visitor.generic_visit(func)
-    # 1. find out all the nodes with 'cond' as one of the attributes
     nodes = condition_visitor.get_nodelist()
     if len(nodes) == 0:
-        print("No cond node can be found")
+        print("No condition node can be found")
+        print(generator.visit(func))
         return False
     # 2. randomly pick one if node from current function scope
     node = random_pick_probless(nodes)
+    if node.cond is None:
+        print("No condition can be found")
+        return False
     id_visitor = IDVisitor(node.cond)
     id_visitor.visit(node.cond)
     type_decl_visitor = TypeDeclVisitor(func)
@@ -106,6 +109,10 @@ def defectify_OILN_add_and(ast, task_name, logger, exp_spec_dict):
     id = random_pick_probless(id_visitor.get_name_list())
     id_type = "NOT_DECLARED"
     for type_decl in type_decls:
+        if type(type_decl) == c_ast.Decl:
+            type_decl = type_decl.type
+        if type(type_decl) in {c_ast.ArrayDecl, c_ast.Struct, c_ast.PtrDecl}:
+            continue
         if id == type_decl.declname:
             # this may not be true, do not know why here <type names> is a list of names yet
             id_type = type_decl.type.names[0]
@@ -133,7 +140,10 @@ def defectify_OILN_add_and(ast, task_name, logger, exp_spec_dict):
                                    right=cond_add,
                                    coord=node.cond.coord)
 
-    logger.log_OILN(node.cond.coord, "add_and")
+    if node.cond.coord:
+        logger.log_OILN(node.cond.coord, "add_and")
+    else:
+        logger.log_OILN(node.coord, "add_and")
     # *5. retrieve ast
     # if add_left:
     #     node.cond = c_ast.BinaryOp(op=node.cond.right.op,
@@ -181,14 +191,20 @@ def defectify_OILN_add_or(ast, task_name, logger, exp_spec_dict):
         random_picker = RandomPicker(None, None)
 
     global_ids, global_funcs = parse_fileAST_exts(ast)
-    func = None
     # 1. randomly pick one function from global functions including main()
     func = random_pick_probless(global_funcs)
-    ifVisitor = IfVisitor(func)
-    ifVisitor.visit(func)
-    nodes = ifVisitor.get_nodelist()
+    condition_visitor = ConditionVisitor(func)
+    condition_visitor.generic_visit(func)
+    nodes = condition_visitor.get_nodelist()
+    if len(nodes) == 0:
+        print("No condition node can be found")
+        print(generator.visit(func))
+        return False
     # 2. randomly pick one if node from current function scope
     node = random_pick_probless(nodes)
+    if node.cond is None:
+        print("No condition can be found")
+        return False
     id_visitor = IDVisitor(node.cond)
     id_visitor.visit(node.cond)
     type_decl_visitor = TypeDeclVisitor(func)
@@ -199,6 +215,10 @@ def defectify_OILN_add_or(ast, task_name, logger, exp_spec_dict):
     id = random_pick_probless(id_visitor.get_name_list())
     id_type = "NOT_DECLARED"
     for type_decl in type_decls:
+        if type(type_decl) == c_ast.Decl:
+            type_decl = type_decl.type
+        if type(type_decl) in {c_ast.ArrayDecl, c_ast.Struct, c_ast.PtrDecl, c_ast.FuncDecl}:
+            continue
         if id == type_decl.declname:
             # this may not be true, do not know why here <type names> is a list of names yet
             id_type = type_decl.type.names[0]
@@ -226,7 +246,10 @@ def defectify_OILN_add_or(ast, task_name, logger, exp_spec_dict):
                                    right=cond_add,
                                    coord=node.cond.coord)
 
-    logger.log_OILN(node.cond.coord, "add_or")
+    if node.cond.coord:
+        logger.log_OILN(node.cond.coord, "add_or")
+    else:
+        logger.log_OILN(node.coord, "add_or")
     # *5. retrieve ast
     # if add_left:
     #     node.cond = c_ast.BinaryOp(op=node.cond.right.op,
@@ -260,30 +283,35 @@ def defectify_OILN_del_and(ast, task_name, logger, exp_spec_dict):
     :return:
     """
     global_ids, global_funcs = parse_fileAST_exts(ast)
-    func = None
     # 1. randomly pick one function from global functions including main()
     func = random_pick_probless(global_funcs)
-    ifVisitor = IfVisitor(func)
-    ifVisitor.visit(func)
-    nodes = ifVisitor.get_nodelist()
+    condition_visitor = ConditionVisitor(func)
+    condition_visitor.generic_visit(func)
+    nodes = condition_visitor.get_nodelist()
+    if len(nodes) == 0:
+        print("No condition node can be found")
+        return False
     # 2. randomly pick one if node from current function scope
     node = random_pick_probless(nodes)
+    if node.cond is None:
+        print("No condition can be found")
+        return False
+    if type(node.cond) != c_ast.BinaryOp:
+        print("Warning: no binary operation can be found, no && can be deleted.")
+        return False
     if node.cond.op != "&&":
         print("Warning: no && can be deleted.")
         return False
-    cond = node.cond
     # 3. save previous conditions
-    temp_op, temp_left, temp_right = cond.op, cond.left, cond.right
+    temp = node.cond
     del_left = random_pick_probless([True, False])
     if del_left:
-        left = cond.left
-        cond.op, cond.left, cond.right = left.op, left.left, left.right
+        node.cond = node.cond.right
     else:
-        right = cond.right
-        cond.op, cond.left, cond.right = right.op, right.left, right.right
+        node.cond = node.cond.left
     logger.log_OILN(node.coord, "del_and")
     # *4. retrieve previous conditions
-    # cond.op, cond.left, cond.right = temp_op, temp_left, temp_right
+    # cond = temp
     return True
 
 
@@ -306,25 +334,35 @@ def defectify_OILN_del_or(ast, task_name, logger, exp_spec_dict):
     :return:
     """
     global_ids, global_funcs = parse_fileAST_exts(ast)
-    func = None
     # 1. randomly pick one function from global functions including main()
     func = random_pick_probless(global_funcs)
-    ifVisitor = IfVisitor(func)
-    ifVisitor.visit(func)
-    nodes = ifVisitor.get_nodelist()
+    condition_visitor = ConditionVisitor(func)
+    condition_visitor.generic_visit(func)
+    nodes = condition_visitor.get_nodelist()
+    if len(nodes) == 0:
+        print("No condition node can be found")
+        return False
     # 2. randomly pick one if node from current function scope
     node = random_pick_probless(nodes)
+    if node.cond is None:
+        print("No condition can be found")
+        return False
+    if type(node.cond) != c_ast.BinaryOp:
+        print("Warning: no binary operation can be found, no || can be deleted.")
+        return False
     if node.cond.op != "||":
         print("Warning: no || can be deleted.")
         return False
-    cond = node.cond
     # 3. save previous conditions
-    temp_op, temp_left, temp_right = cond.op, cond.left, cond.right
-    left = cond.left
-    cond.op, cond.left, cond.right = left.op, left.left, left.right
+    temp = node.cond
+    del_left = random_pick_probless([True, False])
+    if del_left:
+        node.cond = node.cond.right
+    else:
+        node.cond = node.cond.left
     logger.log_OILN(node.coord, "del_or")
     # *4. retrieve previous conditions
-    # cond.op, cond.left, cond.right = temp_op, temp_left, temp_right
+    # cond = temp
     return True
 
 
@@ -346,15 +384,22 @@ def defectify_OILN_negate_cond(ast, task_name, logger, exp_spec_dict):
     :return:
     """
     global_ids, global_funcs = parse_fileAST_exts(ast)
-    func = None
     # 1. randomly pick one function from global functions including main()
     func = random_pick_probless(global_funcs)
-    ifVisitor = IfVisitor(func)
-    ifVisitor.visit(func)
-    nodes = ifVisitor.get_nodelist()
+    condition_visitor = ConditionVisitor(func)
+    condition_visitor.generic_visit(func)
+    nodes = condition_visitor.get_nodelist()
+    if len(nodes) == 0:
+        print("No condition node can be found")
+        return False
     # 2. randomly pick one if node from current function scope
     node = random_pick_probless(nodes)
-
+    if node.cond is None:
+        print("No condition can be found")
+        return False
+    if type(node.cond) != c_ast.BinaryOp:
+        print("Warning: no binary operation can be found, no || can be deleted.")
+        return False
     if type(node.cond.left) == c_ast.UnaryOp and node.cond.left.op == '!':
         # find a ! expression
         # save current part of ast
@@ -362,14 +407,22 @@ def defectify_OILN_negate_cond(ast, task_name, logger, exp_spec_dict):
                              expr=node.cond.left.expr,
                              coord=node.cond.left.coord)
         node.cond.left = node.cond.left.expr
-        logger.log_OILN(node.cond.left.coord, "denegate")
+        if node.cond.left.coord:
+            logger.log_OILN(node.cond.left.coord, "denegate")
+        else:
+            logger.log_OILN(node.cond.coord, "denegate")
         # retrieve ast
         # node.cond.left = temp
     else:
+        print(node.cond.left.coord)
+        print(generator.visit(node.cond.left))
         node.cond.left = c_ast.UnaryOp(op='!',
                                        expr=node.cond.left,
                                        coord=node.cond.left.coord)
-        logger.log_OILN(node.cond.left.coord, "negate")
+        if node.cond.left.coord:
+            logger.log_OILN(node.cond.left.coord, "negate")
+        else:
+            logger.log_OILN(node.coord, "negate")
         # retrieve ast
         # node.cond.left = node.cond.left.expr
     return True
@@ -377,7 +430,6 @@ def defectify_OILN_negate_cond(ast, task_name, logger, exp_spec_dict):
 
 def defectify_OILN(ast, task_name, logger, exp_spec_dict):
     """
-
     :param ast:
     :param task_name:
     :param logger

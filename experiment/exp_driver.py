@@ -97,16 +97,23 @@ def drive(task_name):
                 print("PE")
                 # print(generator.visit(ast))
                 continue
+            success = False
             for i in range(get_randint(repeat_min, repeat_max)):
-                defect = random_pick(defects, prob)
-                success = defectify(ast, task_name, defect, logger, exp_spec_dict)
-                if success:
-                    count += 1
-                    gen_code = generate_exp_output_db(ast, headers)
-                    # print(gen_code)
-                    db_target.execute(INSERT_DEFECTIFY, (count, problem_id, submit_id, code, gen_code))
-                else:
-                    logger.log_nothing()
+                success = False
+                tries = 0
+                while not success:
+                    tries += 1
+                    if tries > 10:
+                        break
+                    defect = random_pick(defects, prob)
+                    success = defectify(ast, task_name, defect, logger, exp_spec_dict)
+            if not success:
+                logger.log_nothing()
+            else:
+                count += 1
+                gen_code = generate_exp_output_db(ast, headers)
+                # print(gen_code)
+                db_target.execute(INSERT_DEFECTIFY, (count, problem_id, submit_id, code, gen_code))
         logger.write_log()
     else:
         print("Err: Wrong source type.")
