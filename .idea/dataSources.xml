@@ -36,11 +36,11 @@
         </library>
       </libraries>
     </data-source>
-    <data-source source="LOCAL" name="test2" uuid="4ceec2f1-80fa-4db8-945e-48a6a6c16015">
+    <data-source source="LOCAL" name="test3" uuid="0571e75a-cadb-470d-b5b7-f44568d18fa1">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
-      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/exp_output/Test02_OILN_DB/Test02_OILN_DB.db</jdbc-url>
+      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/exp_output/Test03_SRIF_DB/Test03_SRIF_DB.db</jdbc-url>
       <driver-properties>
         <property name="enable_load_extension" value="true" />
       </driver-properties>

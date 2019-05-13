@@ -180,6 +180,25 @@ SRIF_1 = {
     }
 }
 
+SRIF_1_DB = {
+    "task_name": "Test03_SRIF",
+    "src_dir": "/home/alex/PycharmProjects/c-defectifier/dataset/c_data_ok.db",
+    "src_type": "db",
+    "sift_option": "",
+    "limit": 1000,
+    "defects": {
+        "SRIF": 1.0
+    },
+    "repeat_min": 1,
+    "repeat_max": 2,
+    "specifications": {
+        "random_picker": {
+            "random_int_list": [0, 1, 2, 3, 5, 10, 20, 30, 40, 50, 100],
+            "random_chr_list": [chr(i) for i in range(128)]
+        }
+    }
+}
+
 SDFN_1 = {
     "task_name": "Test04_SDFN",
     "src_dir": "/home/alex/PycharmProjects/c-defectifier/exp_src/Test04_SDFN",
@@ -310,6 +329,6 @@ def generate_experiment_config(task_name):
 
 
 if __name__ == '__main__':
-    task_name = "Test02_OILN_DB"
-    conf = OILN_1_DB
+    task_name = "Test03_SRIF_DB"
+    conf = SRIF_1_DB
     generate_experiment_config(task_name)

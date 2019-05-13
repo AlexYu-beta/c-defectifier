@@ -473,16 +473,23 @@ def defectify_SRIF_replace_var(ast, task_name, logger, exp_spec_dict):
     global_ids, global_funcs = parse_fileAST_exts(ast)
     id_name_map = {}
     for global_id in global_ids:
-        id_name_map[global_id.name] = global_id.type.type.names[0]
-    func = None
-    count = 0
+        if type(global_id) not in {c_ast.ArrayDecl, c_ast.TypeDecl, c_ast.Struct, c_ast.PtrDecl} \
+                and type(global_id.type) not in {c_ast.ArrayDecl, c_ast.TypeDecl, c_ast.Struct, c_ast.PtrDecl}\
+                and type(global_id.type.type) not in {c_ast.ArrayDecl, c_ast.TypeDecl, c_ast.Struct, c_ast.PtrDecl}:
+            id_name_map[global_id.name] = global_id.type.type.names[0]
     # 1. find all the if-nodes from current function
     func = random_pick_probless(global_funcs)
-    ifVisitor = IfVisitor(func)
-    ifVisitor.visit(func)
-    nodes = ifVisitor.get_nodelist()
+    condition_visitor = ConditionVisitor(func)
+    condition_visitor.generic_visit(func)
+    nodes = condition_visitor.get_nodelist()
+    if len(nodes) == 0:
+        print("No condition node can be found")
+        return False
     # 2. choose one if-node and find out all the identifiers from its condition
     node = random_pick_probless(nodes)
+    if node.cond is None:
+        print("No node condition can be found")
+        return False
     id_visitor = IDVisitor(node.cond)
     id_visitor.visit(node.cond)
     ids = id_visitor.get_id_list()
@@ -495,6 +502,11 @@ def defectify_SRIF_replace_var(ast, task_name, logger, exp_spec_dict):
         print("Warning: no replacement found.")
         return False
     target_id = random_pick_probless(ids)
+    print("target_id: ")
+    print(target_id)
+    if target_id is None:
+        print("No Target ID Found")
+        return False
     ids_remain = id_name_set - {target_id.name}
     global_ids_name = [item.name for item in global_ids]
     ids_remain = ids_remain.union(set(global_ids_name) - {target_id.name})
@@ -504,11 +516,15 @@ def defectify_SRIF_replace_var(ast, task_name, logger, exp_spec_dict):
     type_decl_visitor.visit(func)
     type_decls = type_decl_visitor.get_nodelist()
     for type_decl in type_decls:
-        id_name_map[type_decl.declname] = type_decl.type.names[0]
-    target_id_type = id_name_map[target_id.name]
+        if type(type_decl.type) not in {c_ast.Struct}:
+            id_name_map[type_decl.declname] = type_decl.type.names[0]
+    if target_id.name in id_name_map.keys():
+        target_id_type = id_name_map[target_id.name]
+    else:
+        return False
     matched_ids = []
     for id_remain in ids_remain:
-        if id_name_map[id_remain] == target_id_type:
+        if id_remain in id_name_map.keys() and id_name_map[id_remain] == target_id_type:
             matched_ids.append(id_remain)
     if len(matched_ids) == 0:
         print("Warning: no replacement found.")
@@ -560,16 +576,23 @@ def defectify_SRIF_to_expr(ast, task_name, logger, exp_spec_dict):
     global_ids, global_funcs = parse_fileAST_exts(ast)
     id_name_map = {}
     for global_id in global_ids:
-        id_name_map[global_id.name] = global_id.type.type.names[0]
-    func = None
-    count = 0
+        if type(global_id) not in {c_ast.ArrayDecl, c_ast.TypeDecl, c_ast.Struct, c_ast.PtrDecl} \
+                and type(global_id.type) not in {c_ast.ArrayDecl, c_ast.TypeDecl, c_ast.Struct, c_ast.PtrDecl} \
+                and type(global_id.type.type) not in {c_ast.ArrayDecl, c_ast.TypeDecl, c_ast.Struct, c_ast.PtrDecl}:
+            id_name_map[global_id.name] = global_id.type.type.names[0]
     # 1. find all the if-nodes from current function
     func = random_pick_probless(global_funcs)
-    ifVisitor = IfVisitor(func)
-    ifVisitor.visit(func)
-    nodes = ifVisitor.get_nodelist()
+    condition_visitor = ConditionVisitor(func)
+    condition_visitor.generic_visit(func)
+    nodes = condition_visitor.get_nodelist()
+    if len(nodes) == 0:
+        print("No condition node can be found")
+        return False
     # 2. choose one if-node and find out all the identifiers from its condition
     node = random_pick_probless(nodes)
+    if node.cond is None:
+        print("No node condition can be found")
+        return False
     id_visitor = IDVisitor(node.cond)
     id_visitor.visit(node.cond)
     ids = id_visitor.get_id_list()
@@ -579,14 +602,22 @@ def defectify_SRIF_to_expr(ast, task_name, logger, exp_spec_dict):
             ids.remove(id)
     id_name_set = set([id.name for id in ids])
     target_id = random_pick_probless(ids)
+    if target_id is None:
+        print("No Target ID Found")
+        return False
     # 3. figure out the type of the chosen identifier
     # , and judge whether the chosen identifier can be converted to expression
     type_decl_visitor = TypeDeclVisitor(func)
     type_decl_visitor.visit(func)
     type_decls = type_decl_visitor.get_nodelist()
     for type_decl in type_decls:
-        id_name_map[type_decl.declname] = type_decl.type.names[0]
-    target_id_type = id_name_map[target_id.name]
+        if type(type_decl.type) not in {c_ast.Struct}:
+            id_name_map[type_decl.declname] = type_decl.type.names[0]
+    if target_id.name in id_name_map.keys():
+        target_id_type = id_name_map[target_id.name]
+    else:
+        return False
+
     if target_id_type == "char":
         print("Warning: cannot convert to expression.")
         return False
@@ -669,19 +700,29 @@ def defectify_SRIF_wrap_func_call(ast, task_name, logger, exp_spec_dict):
     global_ids, global_funcs = parse_fileAST_exts(ast)
     id_name_map = {}
     for global_id in global_ids:
-        id_name_map[global_id.name] = global_id.type.type.names[0]
-    func = None
-    count = 0
+        if type(global_id) not in {c_ast.ArrayDecl, c_ast.TypeDecl, c_ast.Struct, c_ast.PtrDecl} \
+                and type(global_id.type) not in {c_ast.ArrayDecl, c_ast.TypeDecl, c_ast.Struct, c_ast.PtrDecl} \
+                and type(global_id.type.type) not in {c_ast.ArrayDecl, c_ast.TypeDecl, c_ast.Struct, c_ast.PtrDecl}:
+            id_name_map[global_id.name] = global_id.type.type.names[0]
     # 1. find all the if-nodes from current function
     func = random_pick_probless(global_funcs)
-    ifVisitor = IfVisitor(func)
-    ifVisitor.visit(func)
-    nodes = ifVisitor.get_nodelist()
+    if func is None:
+        print("NONE")
+        return False
+    condition_visitor = ConditionVisitor(func)
+    condition_visitor.generic_visit(func)
+    nodes = condition_visitor.get_nodelist()
+    if len(nodes) == 0:
+        print("No condition node can be found")
+        return False
     if func.decl.name != "main":
         print("Warning: Cannot wrap function call outside function main.")
         return False
     # 2. choose one if-node and find out all the identifiers from its condition
     node = random_pick_probless(nodes)
+    if node.cond is None:
+        print("No node condition can be found")
+        return False
     id_visitor = IDVisitor(node.cond)
     id_visitor.visit(node.cond)
     ids = id_visitor.get_id_list()
@@ -691,21 +732,48 @@ def defectify_SRIF_wrap_func_call(ast, task_name, logger, exp_spec_dict):
             ids.remove(id)
     id_name_set = set([id.name for id in ids])
     target_id = random_pick_probless(ids)
+    if target_id is None:
+        print("No target id found")
+        return False
     # 3. figure out the type of the chosen identifier
     type_decl_visitor = TypeDeclVisitor(func)
     type_decl_visitor.visit(func)
     type_decls = type_decl_visitor.get_nodelist()
     for type_decl in type_decls:
-        id_name_map[type_decl.declname] = type_decl.type.names[0]
-    target_id_type = id_name_map[target_id.name]
+        if type(type_decl.type) not in {c_ast.Struct}:
+            id_name_map[type_decl.declname] = type_decl.type.names[0]
+    if target_id.name in id_name_map.keys():
+        target_id_type = id_name_map[target_id.name]
+    else:
+        return False
 
     # 4. figure out the type of the chosen identifier
     # , and judge whether the chosen identifier can be wrapped or unwrapped with some functions
     wrappable_funcs = []
     for f in global_funcs:
         if f.decl.name != "main":
+            if f.decl.type.args is None:
+                continue
             params = f.decl.type.args.params
-            params_type = [param.type.type.names[0] for param in params]
+            params_type = []
+            param_success = True
+            for param in params:
+                if type(param.type) in {c_ast.TypeDecl}:
+                    if type(param.type.type) in {c_ast.Struct}:
+                        param_success = False
+                        break
+                    params_type.append(param.type.type.names[0])
+                elif type(param.type) in {c_ast.ArrayDecl, c_ast.Struct, c_ast.PtrDecl}:
+                    param_success = False
+                    break
+                else:
+                    params_type.append(param.type.type.type.names[0])
+            if not param_success:
+                continue
+            if type(f.decl.type.type) in {c_ast.PtrDecl}:
+                continue
+            if type(f.decl.type.type.type) in {c_ast.Struct}:
+                continue
             ret_type = f.decl.type.type.type.names[0]
             if target_id_type == ret_type and target_id_type in params_type:
                 wrappable_funcs.append(f)
@@ -720,6 +788,9 @@ def defectify_SRIF_wrap_func_call(ast, task_name, logger, exp_spec_dict):
     func_call_args = []
     func_def_params = func_to_wrap.decl.type.args.params
     for func_def_param in func_def_params:
+        if type(func_def_param.type) in {c_ast.ArrayDecl, c_ast.PtrDecl}:
+            print("Wrapping function with arrays or pointers as parameters is not supported.")
+            return False
         if func_def_param.type.type.names[0] == target_id_type:
             arg_item = random_pick_probless([c_ast.ID(name=target_id.name),
                                              c_ast.Constant(type=target_id_type,
@@ -781,29 +852,38 @@ def defectify_SRIF_unwrap_func_call(ast, task_name, logger, exp_spec_dict):
     :param exp_spec_dict:
     :return:
     """
-    print("testing SRIF...")
     # begin SRIF
     global_ids, global_funcs = parse_fileAST_exts(ast)
     id_name_map = {}
     for global_id in global_ids:
-        id_name_map[global_id.name] = global_id.type.type.names[0]
-    func = None
-    count = 0
+        if type(global_id) not in {c_ast.ArrayDecl, c_ast.TypeDecl, c_ast.Struct, c_ast.PtrDecl} \
+                and type(global_id.type) not in {c_ast.ArrayDecl, c_ast.TypeDecl, c_ast.Struct, c_ast.PtrDecl} \
+                and type(global_id.type.type) not in {c_ast.ArrayDecl, c_ast.TypeDecl, c_ast.Struct, c_ast.PtrDecl}:
+            id_name_map[global_id.name] = global_id.type.type.names[0]
     # step 1: find all the if-nodes from current function
     func = random_pick_probless(global_funcs)
-    ifVisitor = IfVisitor(func)
-    ifVisitor.visit(func)
-    nodes = ifVisitor.get_nodelist()
-    # 1. find all the if-nodes from current function
-    func = random_pick_probless(global_funcs)
-    ifVisitor = IfVisitor(func)
-    ifVisitor.visit(func)
-    nodes = ifVisitor.get_nodelist()
-    if func.decl.name != "main":
-        print("Warning: Cannot unwrap function call outside function main.")
+    if func is None:
+        print("NONE")
         return False
+    # if func.decl.name != "main":
+    #     print("Warning: Cannot unwrap function call outside function main.")
+    #     return False
+
+    condition_visitor = ConditionVisitor(func)
+    condition_visitor.generic_visit(func)
+    nodes = condition_visitor.get_nodelist()
+    if len(nodes) == 0:
+        print("No condition node can be found")
+        return False
+
     # 2. choose one if-node and find out all the identifiers from its condition
     node = random_pick_probless(nodes)
+    if node is None:
+        print("No node condition can be found")
+        return False
+    if node.cond is None:
+        print("No condition node can be found")
+        return False
     id_visitor = IDVisitor(node.cond)
     id_visitor.visit(node.cond)
     ids = id_visitor.get_id_list()
@@ -813,64 +893,98 @@ def defectify_SRIF_unwrap_func_call(ast, task_name, logger, exp_spec_dict):
             ids.remove(id)
     id_name_set = set([id.name for id in ids])
     target_id = random_pick_probless(ids)
+    if target_id is None:
+        print("No target id found")
+        return False
     # 3. figure out the type of the chosen identifier
     type_decl_visitor = TypeDeclVisitor(func)
     type_decl_visitor.visit(func)
     type_decls = type_decl_visitor.get_nodelist()
     for type_decl in type_decls:
-        id_name_map[type_decl.declname] = type_decl.type.names[0]
-    target_id_type = id_name_map[target_id.name]
+        if type(type_decl.type) not in {c_ast.Struct}:
+            id_name_map[type_decl.declname] = type_decl.type.names[0]
+    if target_id.name in id_name_map.keys():
+        target_id_type = id_name_map[target_id.name]
+    else:
+        return False
 
     # 4. figure out the type of the chosen identifier
     # , and judge whether the chosen identifier can be wrapped or unwrapped with some functions
+
     wrappable_funcs = []
     for f in global_funcs:
         if f.decl.name != "main":
+            if f.decl.type.args is None:
+                continue
             params = f.decl.type.args.params
-            params_type = [param.type.type.names[0] for param in params]
+            params_type = []
+            param_success = True
+            for param in params:
+                if type(param.type) in {c_ast.TypeDecl}:
+                    if type(param.type.type) in {c_ast.Struct}:
+                        param_success = False
+                        break
+                    params_type.append(param.type.type.names[0])
+                elif type(param.type) in {c_ast.ArrayDecl, c_ast.Struct, c_ast.PtrDecl}:
+                    param_success = False
+                    break
+                else:
+                    params_type.append(param.type.type.type.names[0])
+            if not param_success:
+                continue
+            if type(f.decl.type.type) in {c_ast.PtrDecl}:
+                continue
+            if type(f.decl.type.type.type) in {c_ast.Struct}:
+                continue
             ret_type = f.decl.type.type.type.names[0]
             if target_id_type == ret_type and target_id_type in params_type:
                 wrappable_funcs.append(f)
+
     if len(wrappable_funcs) == 0:
-        print("Warning: No unwrappable function call found.")
+        # print("Warning: No unwrappable function call found.")
         return False
     else:
         wrappable_func_names = [wrappable_func.decl.name for wrappable_func in wrappable_funcs]
         func_call_visitor = FuncCallVisitor(func)
         func_call_visitor.visit(func)
         func_calls = func_call_visitor.get_nodelist()
+        if len(func_calls) == 0:
+            print("No function call found.")
+            return False
         unwrappable_func_call = None
         for fc in func_calls:
+            if fc.args is None:
+                continue
             arg_list = fc.args.exprs
             if fc.name.name in wrappable_func_names and target_id in arg_list:
                 unwrappable_func_call = fc
                 break
         if unwrappable_func_call is None:
-            print("Warning: No unwrappable function call found.")
+            # print("Warning: No unwrappable function call found.")
             return False
-    # unwrap_func_call(target_id, count, node, unwrappable_func_call)
-    # unwrap_func_call(node_, count, root, func_call):
-    binary_op_visitor = BinaryOpVisitor(node.cond)
-    binary_op_visitor.visit(node.cond)
-    binary_ops = binary_op_visitor.get_nodelist()
-    for binary_op in binary_ops:
-        if binary_op.left == unwrappable_func_call:
-            temp = binary_op.left
-            binary_op.left = c_ast.ID(name=target_id.name,
-                                      coord=binary_op.left.coord)
-            logger.log_SRIF(target_id.coord, "unwrap func")
-            # retrieve ast
-            # binary_op.left = temp
-            break
-        elif binary_op.right == unwrappable_func_call:
-            temp = binary_op.right
-            binary_op.right = c_ast.ID(name=target_id.name,
-                                       coord=binary_op.left.coord)
-            logger.log_SRIF(target_id.coord, "unwrap func")
-            # retrieve ast
-            # binary_op.right = temp
-            break
-    return False
+        else:
+            print("oh my")
+            binary_op_visitor = BinaryOpVisitor(node.cond)
+            binary_op_visitor.visit(node.cond)
+            binary_ops = binary_op_visitor.get_nodelist()
+            for binary_op in binary_ops:
+                if binary_op.left == unwrappable_func_call:
+                    temp = binary_op.left
+                    binary_op.left = c_ast.ID(name=target_id.name,
+                                              coord=binary_op.left.coord)
+                    logger.log_SRIF(target_id.coord, "unwrap func")
+                    # retrieve ast
+                    # binary_op.left = temp
+                    return True
+                elif binary_op.right == unwrappable_func_call:
+                    temp = binary_op.right
+                    binary_op.right = c_ast.ID(name=target_id.name,
+                                               coord=binary_op.left.coord)
+                    logger.log_SRIF(target_id.coord, "unwrap func")
+                    # retrieve ast
+                    # binary_op.right = temp
+                    return True
+            return False
 
 
 def defectify_SRIF(ast, task_name, logger, exp_spec_dict):

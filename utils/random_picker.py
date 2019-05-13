@@ -25,7 +25,6 @@ def random_pick_probless(items):
         index = random.randint(0, len_i - 1)
         return items[index]
     except:
-        print(items)
         return None
 
 

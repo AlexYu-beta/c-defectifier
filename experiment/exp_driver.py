@@ -76,7 +76,9 @@ def drive(task_name):
                 SIFT_COND.append(k + " == " + v)
             QUERY = QUERY + QUERY_ADD + " and ".join(SIFT_COND)
         if limit != "":
-            QUERY = QUERY + " limit " + str(limit) + ";"
+            limit_num = int(limit)
+            if limit_num >0:
+                QUERY = QUERY + " limit " + str(limit) + ";"
         else:
             QUERY = QUERY + ";"
         item_list = db_origin.execute(QUERY, "").fetchall()
@@ -253,6 +255,6 @@ def test():
 
 
 if __name__ == '__main__':
-    task_name = "Test02_OILN_DB"
+    task_name = "Test03_SRIF_DB"
     drive(task_name)
     # test()
