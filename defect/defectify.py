@@ -1117,13 +1117,20 @@ def defectify_OAIS(ast, task_name, logger, exp_spec_dict):
     global_ids, global_funcs = parse_fileAST_exts(ast)
     id_name_map = {}
     for global_id in global_ids:
-        id_name_map[global_id.name] = global_id.type.type.names[0]
+        if type(global_id) not in {c_ast.ArrayDecl, c_ast.TypeDecl, c_ast.Struct, c_ast.PtrDecl} \
+                and type(global_id.type) not in {c_ast.ArrayDecl, c_ast.TypeDecl, c_ast.Struct, c_ast.PtrDecl} \
+                and type(global_id.type.type) not in {c_ast.ArrayDecl, c_ast.TypeDecl, c_ast.Struct, c_ast.PtrDecl}:
+            id_name_map[global_id.name] = global_id.type.type.names[0]
     func = random_pick_probless(global_funcs)
+    if func is None:
+        print("NONE")
+        return False
     type_decl_visitor = TypeDeclVisitor(func)
     type_decl_visitor.visit(func)
     type_decls = type_decl_visitor.get_nodelist()
     for type_decl in type_decls:
-        id_name_map[type_decl.declname] = type_decl.type.names[0]
+        if type(type_decl.type) not in {c_ast.Struct}:
+            id_name_map[type_decl.declname] = type_decl.type.names[0]
     binary_visitor = BinaryOpVisitor(func)
     binary_visitor.visit(func)
     available_nodes = []
@@ -1132,10 +1139,16 @@ def defectify_OAIS(ast, task_name, logger, exp_spec_dict):
         if binary_op.op in c_arithmetic_binary_operator_set:
             if type(binary_op.left) == c_ast.ID or type(binary_op.right) == c_ast.ID:
                 available_nodes.append(binary_op)
+    if len(available_nodes) == 0:
+        print("no available nodes")
+        return False
     target_node = random_pick_probless(available_nodes)
     if type(target_node.left) == c_ast.ID:
         temp = target_node.left
-        id_type = id_name_map[temp.name]
+        if temp.name in id_name_map.keys():
+            id_type = id_name_map[temp.name]
+        else:
+            return False
         if id_type in {"int", "short", "long"}:
             right_const = c_ast.Constant(type=id_type,
                                          value=str(random_picker.gen_random(id_type)))
@@ -1160,7 +1173,10 @@ def defectify_OAIS(ast, task_name, logger, exp_spec_dict):
 
     if type(target_node.right) == c_ast.ID:
         temp = target_node.right
-        id_type = id_name_map[temp.name]
+        if temp.name in id_name_map.keys():
+            id_type = id_name_map[temp.name]
+        else:
+            return False
         if id_type in {"int", "short", "long"}:
             right_const = c_ast.Constant(type=id_type,
                                          value=str(random_picker.gen_random(id_type)))

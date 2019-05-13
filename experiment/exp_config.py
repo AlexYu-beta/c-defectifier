@@ -256,6 +256,25 @@ OAIS_1 = {
     }
 }
 
+OAIS_1_DB = {
+    "task_name": "Test05_OAIS",
+    "src_dir": "/home/alex/PycharmProjects/c-defectifier/dataset/c_data_ok.db",
+    "src_type": "db",
+    "sift_option": "",
+    "limit": -1,
+    "defects": {
+        "OAIS": 1.0
+    },
+    "repeat_min": 1,
+    "repeat_max": 2,
+    "specifications": {
+        "random_picker": {
+            "random_int_list": [0, 1, 2, 3, 5, 10, 20, 30, 40, 50, 100],
+            "random_chr_list": [chr(i) for i in range(128)]
+        }
+    }
+}
+
 STYP_1 = {
     "task_name": "Test06_STYP",
     "src_dir": "/home/alex/PycharmProjects/c-defectifier/exp_src/Test06_STYP",
@@ -348,6 +367,6 @@ def generate_experiment_config(task_name):
 
 
 if __name__ == '__main__':
-    task_name = "Test04_SDFN_DB"
-    conf = SDFN_1_DB
+    task_name = "Test05_OAIS_DB"
+    conf = OAIS_1_DB
     generate_experiment_config(task_name)
