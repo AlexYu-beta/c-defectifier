@@ -100,6 +100,7 @@ def drive(task_name):
                 # print(generator.visit(ast))
                 continue
             success = False
+            success_times = 0
             for i in range(get_randint(repeat_min, repeat_max)):
                 success = False
                 tries = 0
@@ -109,7 +110,9 @@ def drive(task_name):
                         break
                     defect = random_pick(defects, prob)
                     success = defectify(ast, task_name, defect, logger, exp_spec_dict)
-            if not success:
+                if success:
+                    success_times += 1
+            if success_times == 0:
                 logger.log_nothing()
             else:
                 count += 1
@@ -255,6 +258,6 @@ def test():
 
 
 if __name__ == '__main__':
-    task_name = "Test03_SRIF_DB"
+    task_name = "Test04_SDFN_DB"
     drive(task_name)
     # test()

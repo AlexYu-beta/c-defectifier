@@ -87,6 +87,9 @@ def defectify_OILN_add_and(ast, task_name, logger, exp_spec_dict):
     global_ids, global_funcs = parse_fileAST_exts(ast)
     # 1. randomly pick one function from global functions including main()
     func = random_pick_probless(global_funcs)
+    if func is None:
+        print("NONE")
+        return False
     condition_visitor = ConditionVisitor(func)
     condition_visitor.generic_visit(func)
     nodes = condition_visitor.get_nodelist()
@@ -111,7 +114,9 @@ def defectify_OILN_add_and(ast, task_name, logger, exp_spec_dict):
     for type_decl in type_decls:
         if type(type_decl) == c_ast.Decl:
             type_decl = type_decl.type
-        if type(type_decl) in {c_ast.ArrayDecl, c_ast.Struct, c_ast.PtrDecl}:
+        if type(type_decl) in {c_ast.ArrayDecl, c_ast.Struct, c_ast.PtrDecl, c_ast.FuncDecl}:
+            continue
+        if type(type_decl.type) in {c_ast.Struct}:
             continue
         if id == type_decl.declname:
             # this may not be true, do not know why here <type names> is a list of names yet
@@ -193,6 +198,9 @@ def defectify_OILN_add_or(ast, task_name, logger, exp_spec_dict):
     global_ids, global_funcs = parse_fileAST_exts(ast)
     # 1. randomly pick one function from global functions including main()
     func = random_pick_probless(global_funcs)
+    if func is None:
+        print("NONE")
+        return False
     condition_visitor = ConditionVisitor(func)
     condition_visitor.generic_visit(func)
     nodes = condition_visitor.get_nodelist()
@@ -218,6 +226,8 @@ def defectify_OILN_add_or(ast, task_name, logger, exp_spec_dict):
         if type(type_decl) == c_ast.Decl:
             type_decl = type_decl.type
         if type(type_decl) in {c_ast.ArrayDecl, c_ast.Struct, c_ast.PtrDecl, c_ast.FuncDecl}:
+            continue
+        if type(type_decl.type) in {c_ast.Struct}:
             continue
         if id == type_decl.declname:
             # this may not be true, do not know why here <type names> is a list of names yet
@@ -285,6 +295,9 @@ def defectify_OILN_del_and(ast, task_name, logger, exp_spec_dict):
     global_ids, global_funcs = parse_fileAST_exts(ast)
     # 1. randomly pick one function from global functions including main()
     func = random_pick_probless(global_funcs)
+    if func is None:
+        print("NONE")
+        return False
     condition_visitor = ConditionVisitor(func)
     condition_visitor.generic_visit(func)
     nodes = condition_visitor.get_nodelist()
@@ -336,6 +349,9 @@ def defectify_OILN_del_or(ast, task_name, logger, exp_spec_dict):
     global_ids, global_funcs = parse_fileAST_exts(ast)
     # 1. randomly pick one function from global functions including main()
     func = random_pick_probless(global_funcs)
+    if func is None:
+        print("NONE")
+        return False
     condition_visitor = ConditionVisitor(func)
     condition_visitor.generic_visit(func)
     nodes = condition_visitor.get_nodelist()
@@ -386,6 +402,9 @@ def defectify_OILN_negate_cond(ast, task_name, logger, exp_spec_dict):
     global_ids, global_funcs = parse_fileAST_exts(ast)
     # 1. randomly pick one function from global functions including main()
     func = random_pick_probless(global_funcs)
+    if func is None:
+        print("NONE")
+        return False
     condition_visitor = ConditionVisitor(func)
     condition_visitor.generic_visit(func)
     nodes = condition_visitor.get_nodelist()
@@ -479,6 +498,9 @@ def defectify_SRIF_replace_var(ast, task_name, logger, exp_spec_dict):
             id_name_map[global_id.name] = global_id.type.type.names[0]
     # 1. find all the if-nodes from current function
     func = random_pick_probless(global_funcs)
+    if func is None:
+        print("NONE")
+        return False
     condition_visitor = ConditionVisitor(func)
     condition_visitor.generic_visit(func)
     nodes = condition_visitor.get_nodelist()
@@ -582,6 +604,9 @@ def defectify_SRIF_to_expr(ast, task_name, logger, exp_spec_dict):
             id_name_map[global_id.name] = global_id.type.type.names[0]
     # 1. find all the if-nodes from current function
     func = random_pick_probless(global_funcs)
+    if func is None:
+        print("NONE")
+        return False
     condition_visitor = ConditionVisitor(func)
     condition_visitor.generic_visit(func)
     nodes = condition_visitor.get_nodelist()
@@ -963,7 +988,6 @@ def defectify_SRIF_unwrap_func_call(ast, task_name, logger, exp_spec_dict):
             # print("Warning: No unwrappable function call found.")
             return False
         else:
-            print("oh my")
             binary_op_visitor = BinaryOpVisitor(node.cond)
             binary_op_visitor.visit(node.cond)
             binary_ops = binary_op_visitor.get_nodelist()
@@ -972,7 +996,10 @@ def defectify_SRIF_unwrap_func_call(ast, task_name, logger, exp_spec_dict):
                     temp = binary_op.left
                     binary_op.left = c_ast.ID(name=target_id.name,
                                               coord=binary_op.left.coord)
-                    logger.log_SRIF(target_id.coord, "unwrap func")
+                    if target_id.coord:
+                        logger.log_SRIF(target_id.coord, "unwrap func")
+                    else:
+                        logger.log_SRIF(node.coord, "unwrap func")
                     # retrieve ast
                     # binary_op.left = temp
                     return True
@@ -980,7 +1007,10 @@ def defectify_SRIF_unwrap_func_call(ast, task_name, logger, exp_spec_dict):
                     temp = binary_op.right
                     binary_op.right = c_ast.ID(name=target_id.name,
                                                coord=binary_op.left.coord)
-                    logger.log_SRIF(target_id.coord, "unwrap func")
+                    if target_id.coord:
+                        logger.log_SRIF(target_id.coord, "unwrap func")
+                    else:
+                        logger.log_SRIF(node.coord, "unwrap func")
                     # retrieve ast
                     # binary_op.right = temp
                     return True
