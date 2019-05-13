@@ -258,6 +258,6 @@ def test():
 
 
 if __name__ == '__main__':
-    task_name = "Test05_OAIS_DB"
+    task_name = "Test06_STYP_DB"
     drive(task_name)
     # test()

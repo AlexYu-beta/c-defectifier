@@ -1219,6 +1219,15 @@ def defectify_STYP(ast, task_name, logger, exp_spec_dict):
     char_family = ["char"]
     float_family = ["float", "double"]
     var_decl = random_pick_probless(var_decls)
+    if var_decl is None:
+        print("No variant declaration.")
+        return False
+    if type(var_decl.type) in {c_ast.ArrayDecl, c_ast.PtrDecl, c_ast.FuncDecl, c_ast.Struct}:
+        print("Conversion of arrays, pointers, function calls and structs is not supported")
+        return False
+    if type(var_decl.type.type) in {c_ast.Struct}:
+        print("Conversion of arrays, pointers, function calls and structs is not supported")
+        return False
     type_name = var_decl.type.type.names[0]
     if type_name in int_family:
         int_family.remove(type_name)
