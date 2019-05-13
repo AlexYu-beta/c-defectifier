@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<dataSource name="db_test(target_sift)">
+<dataSource name="c_data.db">
   <database-model serializer="dbm" rdbms="SQLITE" format-version="4.11">
     <root id="1">
       <ServerVersion>3.25.1</ServerVersion>

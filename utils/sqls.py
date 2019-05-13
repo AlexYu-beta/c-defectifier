@@ -40,6 +40,7 @@ create table defectify
 (
   id                TEXT
     primary key,
+  problem_id        TEXT,
   submit_id         TEXT,
   code              TEXT,
   gen_code          TEXT
@@ -47,6 +48,6 @@ create table defectify
 '''
 
 INSERT_DEFECTIFY = r'''
-insert into defectify(id, submit_id, code, gen_code)
-values (?,?,?,?);
+insert into defectify(id, problem_id, submit_id, code, gen_code)
+values (?,?,?,?,?);
 '''

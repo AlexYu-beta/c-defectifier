@@ -20,9 +20,13 @@ def random_pick_probless(items):
     :param items:
     :return:
     """
-    len_i = len(items)
-    index = random.randint(0, len_i - 1)
-    return items[index]
+    try:
+        len_i = len(items)
+        index = random.randint(0, len_i - 1)
+        return items[index]
+    except:
+        print(items)
+        return None
 
 
 def random_pick(items, prob):

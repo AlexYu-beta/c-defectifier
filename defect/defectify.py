@@ -85,12 +85,15 @@ def defectify_OILN_add_and(ast, task_name, logger, exp_spec_dict):
         random_picker = RandomPicker(None, None)
 
     global_ids, global_funcs = parse_fileAST_exts(ast)
-    func = None
     # 1. randomly pick one function from global functions including main()
     func = random_pick_probless(global_funcs)
-    ifVisitor = IfVisitor(func)
-    ifVisitor.visit(func)
-    nodes = ifVisitor.get_nodelist()
+    condition_visitor = ConditionVisitor(func)
+    condition_visitor.generic_visit(func)
+    # 1. find out all the nodes with 'cond' as one of the attributes
+    nodes = condition_visitor.get_nodelist()
+    if len(nodes) == 0:
+        print("No cond node can be found")
+        return False
     # 2. randomly pick one if node from current function scope
     node = random_pick_probless(nodes)
     id_visitor = IDVisitor(node.cond)
@@ -901,6 +904,8 @@ def defectify_SDFN(ast, task_name, logger, exp_spec_dict):
 def defectify_OAIS(ast, task_name, logger, exp_spec_dict):
     """
     OAIS is just like to_expr in SRIF, but different in sequence-flow
+    {
+    }
     :param ast:
     :param task_name:
     :param logger:
@@ -1130,7 +1135,7 @@ def defectify_test(ast, task_name, logger, exp_spec_dict):
     :param outer_count:
     :return:
     """
-    print(ast)
+    print("")
 
 
 def defectify(ast, task_name, defectify_type, logger, exp_spec_dict):

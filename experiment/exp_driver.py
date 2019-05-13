@@ -7,13 +7,14 @@ from utils.db_util import DBConnection
 from utils.code_util import parse_header_body
 from utils.sqls import *
 from utils.random_picker import random_pick, get_randint
-from pycparser import c_parser
+from pycparser import c_parser, c_generator
 from pycparser.plyparser import ParseError
 from defect.defectify import defectify
 from utils.logger import Logger
 
 
 sys.path.extend(['.', '..'])
+generator = c_generator.CGenerator
 
 
 def drive(task_name):
@@ -84,14 +85,17 @@ def drive(task_name):
         for item in item_list:
             item = list(item)
             submit_id = item[0]
+            problem_id = item[5]
             code = item[-1].strip('\'')
             code = code.replace('\r', '')
             headers, body = parse_header_body(code)
             parser = c_parser.CParser()
             try:
                 ast = parser.parse(body)
+                code = generate_exp_output_db(ast, headers)
             except ParseError:
                 print("PE")
+                # print(generator.visit(ast))
                 continue
             for i in range(get_randint(repeat_min, repeat_max)):
                 defect = random_pick(defects, prob)
@@ -99,8 +103,8 @@ def drive(task_name):
                 if success:
                     count += 1
                     gen_code = generate_exp_output_db(ast, headers)
-                    print(gen_code)
-                    db_target.execute(INSERT_DEFECTIFY, (count, submit_id, code, gen_code))
+                    # print(gen_code)
+                    db_target.execute(INSERT_DEFECTIFY, (count, problem_id, submit_id, code, gen_code))
                 else:
                     logger.log_nothing()
         logger.write_log()
@@ -118,18 +122,130 @@ def test():
     src_file = open(exp_src, 'r')
     code = src_file.read()
     src_file.close()
-    parser = c_parser.CParser()
-    ast = parser.parse(code)
-    logger = Logger("test")
-    exp_spec_dict = {
-        "OEDE": {
-            "from": '='
-        }
+    code = r'''
+    int main()
+{
+  int n;
+  int m;
+  scanf("%d %d", &n, &m);
+  int i;
+  int j;
+  int k;
+  char a[n][m];
+  for (i = 0; i < n; i++)
+  {
+    scanf("%s", &a[i]);
+  }
+
+  i = 0;
+  j = 0;
+  int o = 0;
+  int p = 0;
+  int c = 0;
+  int t = 0;
+  int mt = m * n;
+  int b[((m < n) ? (n) : (m)) + 1];
+  for (i = 2; i < (((m < n) ? (n) : (m)) + 1); i++)
+  {
+    if (b[i] != 1)
+    {
+      b[i] = 0;
+      j = 2;
+      while ((i * j) < (((m < n) ? (n) : (m)) + 1))
+      {
+        b[i * j] = 1;
+        j++;
+      }
+
     }
-    defectify(ast, "test", "test", logger, exp_spec_dict)
+
+  }
+
+  i = 0;
+  j = 0;
+  for (k = 2; k <= ((((m < n) ? (n) : (m)) / 2) + 1); k++)
+  {
+    t = 0;
+    if (b[k] == 0)
+    {
+      for (i = 0; i < n; i = i + k)
+      {
+        for (j = 0; j < m; j = j + k)
+        {
+          c = 0;
+          for (o = 0; o < k; o++)
+          {
+            for (p = 0; p < k; p++)
+            {
+              if (((i + o) < n) && ((j + p) < m))
+              {
+                if (a[i + o][j + p] == '1')
+                {
+                  c++;
+                }
+
+              }
+
+            }
+
+            if ((((c * 2) > (k * k)) && (((t + (k * k)) - c) >= mt)) || (((c * 2) <= (k * k)) && ((t + c) >= mt)))
+              break;
+
+          }
+
+          if ((2 * c) != (k * k))
+            t += (k * k) - c;
+          else
+            t += c;
+
+          if (t >= mt)
+            break;
+
+        }
+
+      }
+
+      if (mt > t)
+      {
+        mt = t;
+      }
+
+    }
+
+  }
+
+  printf("%d\n", mt);
+  return 0;
+}
+    '''
+    code_1 = r'''
+    int main(){
+    int i,n,sum;
+    sum = 0;
+    for (i = 0; i < n; i++)
+    {
+        sum += i;
+        if (sum > 100)
+        {
+            break;
+        }
+
+    }
+}
+    '''
+    parser = c_parser.CParser()
+    ast = parser.parse(code_1)
+    print(ast)
+    # logger = Logger("test")
+    # exp_spec_dict = {
+    #     "OEDE": {
+    #         "from": '='
+    #     }
+    # }
+    # defectify(ast, "test", "test", logger, exp_spec_dict)
 
 
 if __name__ == '__main__':
-    task_name = "db_test"
+    task_name = "Test02_OILN_DB"
     drive(task_name)
     # test()
