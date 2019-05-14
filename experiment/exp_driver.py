@@ -258,6 +258,6 @@ def test():
 
 
 if __name__ == '__main__':
-    task_name = "Test07_SMOV_DB"
+    task_name = "prob_test_db"
     drive(task_name)
     # test()

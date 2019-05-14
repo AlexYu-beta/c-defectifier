@@ -351,7 +351,26 @@ SMOV_1_DB = {
     }
 }
 
-OFPO_1 = {
+OFPO_1_DB = {
+    "task_name": "Test08_OFPO",
+    "src_dir": "/home/alex/PycharmProjects/c-defectifier/dataset/c_data_ok.db",
+    "src_type": "db",
+    "sift_option": "",
+    "limit": -1,
+    "defects": {
+        "OFPO": 1.0
+    },
+    "repeat_min": 1,
+    "repeat_max": 2,
+    "specifications": {
+        "random_picker": {
+            "random_int_list": [0, 1, 2, 3, 5, 10, 20, 30, 40, 50, 100],
+            "random_chr_list": [chr(i) for i in range(128)]
+        }
+    }
+}
+
+OFPO_1= {
     "task_name": "Test08_OFPO",
     "src_dir": "/home/alex/PycharmProjects/c-defectifier/exp_src/Test08_OFPO",
     "src_type": "files",
@@ -380,16 +399,32 @@ OFPO = {
 }
 
 conf_prob_test = {
-    "task_name": "prob_test",
-    "src_dir": "/home/alex/PycharmProjects/c-defectifier/exp_src/prob_test",
-    "method": "prob",
-    "number": 20,
+    "task_name": "prob_test_db",
+    "src_dir": "/home/alex/PycharmProjects/c-defectifier/dataset/c_data_ok.db",
+    "src_type": "db",
+    "sift_option": "",
+    "limit": -1,
     "defects": {
-        "ORRN": 0.1,
-        "OEDE": 0.2,
-        "OILN": 0.7
+        "OFPO": 0.1,
+        "OILN": 0.3,
+        "SRIF": 0.3,
+        "ORRN": 0.2,
+        "STYP": 0.1
+    },
+    "repeat_min": 1,
+    "repeat_max": 2,
+    "specifications": {
+        "random_picker": {
+            "random_int_list": [0, 1, 2, 3, 5, 10, 20, 30, 40, 50, 100],
+            "random_chr_list": [chr(i) for i in range(128)]
+        },
+        "SRIF": {
+            "SRIF_replace_var": 0.5,
+            "SRIF_to_expr": 0.5
+        }
     }
 }
+
 
 
 def generate_experiment_config(task_name):
@@ -405,6 +440,6 @@ def generate_experiment_config(task_name):
 
 
 if __name__ == '__main__':
-    task_name = "Test07_SMOV_DB"
-    conf = SMOV_1_DB
+    task_name = "prob_test_db"
+    conf = conf_prob_test
     generate_experiment_config(task_name)

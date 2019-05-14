@@ -666,8 +666,10 @@ def defectify_SRIF_to_expr(ast, task_name, logger, exp_spec_dict):
                                             left=target_id,
                                             right=value_const,
                                             coord=target_id.coord)
-
-            logger.log_SRIF(target_id.coord, "to expr")
+            if target_id.coord:
+                logger.log_SRIF(target_id.coord, "to expr")
+            else:
+                logger.log_SRIF(node.coord, "to expr")
             # retrieve ast
             # binary_op.left = temp
             break
@@ -677,7 +679,10 @@ def defectify_SRIF_to_expr(ast, task_name, logger, exp_spec_dict):
                                              left=target_id,
                                              right=value_const,
                                              coord=target_id.coord)
-            logger.log_SRIF(target_id.coord, "to expr")
+            if target_id.coord:
+                logger.log_SRIF(target_id.coord, "to expr")
+            else:
+                logger.log_SRIF(node.coord, "to expr")
             # retrieve ast
             # binary_op.right = temp
             break
@@ -1321,14 +1326,23 @@ def defectify_OFPO(ast, task_name, logger, exp_spec_dict):
     available_funcs = []
     funcs_param_type_map = {}
     for global_func in global_funcs:
+        if global_func.decl.type.args is None:
+            continue
         params = global_func.decl.type.args.params
         param_type_map = {}
         for param in params:
+            print("test")
+            if type(param) == c_ast.ID:
+                continue
             param_type = param.type.type
             if type(param_type) == c_ast.IdentifierType:
                 param_type_name = param_type.names[0]
             elif type(param_type) == c_ast.PtrDecl:
+                if type(param_type.type.type) in {c_ast.Struct}:
+                    continue
                 param_type_name = param_type.type.type.names[0] + "*"
+            else:
+                continue
             if param_type_name in param_type_map.keys():
                 param_type_map[param_type_name].append(params.index(param))
             else:
