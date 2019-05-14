@@ -419,8 +419,28 @@ conf_prob_test = {
             "random_chr_list": [chr(i) for i in range(128)]
         },
         "SRIF": {
-            "SRIF_replace_var": 0.5,
-            "SRIF_to_expr": 0.5
+            "SRIF_replace_var": 0.7,
+            "SRIF_to_expr": 0.3
+        }
+    }
+}
+
+DCCR_DB = {
+    "task_name": "Test09_DCCR",
+    "src_dir": "/home/alex/PycharmProjects/c-defectifier/dataset/c_data_ok.db",
+    "src_type": "db",
+    "sift_option": "",
+    "limit": 10,
+    "defects": {
+        "DCCR_to_var": 1.0
+    },
+    "repeat_min": 1,
+    "repeat_max": 2,
+    "specifications": {
+        "random_picker": {
+            "random_int_list": [0, 1, 2, 3, 5, 10, 20, 30, 40, 50, 100],
+            "random_chr_list": [chr(i) for i in range(128)],
+            "replacement_offset": [-4, -2, -1, 1, 2, 4]
         }
     }
 }
@@ -440,6 +460,6 @@ def generate_experiment_config(task_name):
 
 
 if __name__ == '__main__':
-    task_name = "prob_test_db"
-    conf = conf_prob_test
+    task_name = "Test09_DCCR_DB"
+    conf = DCCR_DB
     generate_experiment_config(task_name)

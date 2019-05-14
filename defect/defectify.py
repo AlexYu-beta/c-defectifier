@@ -5,12 +5,15 @@ from visitors.DeclVisitor import DeclVisitor
 from visitors.FuncCallVisitor import FuncCallVisitor
 from visitors.IDVisitor import IDVisitor
 from visitors.IfVisitor import IfVisitor
+from visitors.OpVisitor import OpVisitor
 from visitors.StatementsVisitor import StatementsVisitor
 from visitors.StatementVisitor import StatementVisitor
 from visitors.TypeDeclVisitor import TypeDeclVisitor
 from utils.random_picker import random_pick, random_pick_probless, RandomPicker, get_randint
 from utils.ast_util import parse_fileAST_exts
 from pycparser import c_ast, c_generator
+
+import re
 
 c_relational_binary_operator_set = {'>', '<', '>=', '<=', '==', '!='}
 c_arithmetic_binary_operator_set = {'+', '-', '*', '/', '%'}
@@ -207,7 +210,6 @@ def defectify_OILN_add_or(ast, task_name, logger, exp_spec_dict):
     nodes = condition_visitor.get_nodelist()
     if len(nodes) == 0:
         print("No condition node can be found")
-        print(generator.visit(func))
         return False
     # 2. randomly pick one if node from current function scope
     node = random_pick_probless(nodes)
@@ -1381,6 +1383,219 @@ def defectify_OFPO(ast, task_name, logger, exp_spec_dict):
     # target_arg[index_1] = target_arg[index_2]
     # target_arg[index_2] = temp
     return True
+
+
+def defectify_DCCR_to_const(ast, task_name, logger, exp_spec_dict):
+    """
+
+    :param ast:
+    :param task_name:
+    :param logger:
+    :param exp_spec_dict:
+    :return:
+    """
+
+    if "random_picker" in exp_spec_dict.keys():
+        random_picker_spec = exp_spec_dict["random_picker"]
+        random_picker = RandomPicker(random_picker_spec["random_int_list"], random_picker_spec["random_chr_list"])
+    else:
+        random_picker = RandomPicker(None, None)
+
+    global_ids, global_funcs = parse_fileAST_exts(ast)
+    # 1. randomly pick one function from global functions including main()
+    func = random_pick_probless(global_funcs)
+    if func is None:
+        print("NONE")
+        return False
+    op_visitor = OpVisitor(func)
+    op_visitor.generic_visit(func)
+    nodes = op_visitor.get_nodelist()
+    if len(nodes) == 0:
+        print("No nodes with op can be found.")
+        return False
+    available_nodes = []
+    for node in nodes:
+        if type(node) == c_ast.UnaryOp:
+            if type(node.expr) == c_ast.Constant:
+                available_nodes.append(node)
+        elif type(node) == c_ast.BinaryOp:
+            if type(node.left) == c_ast.Constant or type(node.right) == c_ast.Constant:
+                available_nodes.append(node)
+        else:
+            continue
+    if len(available_nodes) == 0:
+        print("No constant can be found.")
+        return False
+
+    target_node = random_pick_probless(available_nodes)
+    replacement_offset = random_picker_spec["replacement_offset"]
+
+    if type(target_node) == c_ast.UnaryOp:
+        const_type = target_node.expr.type
+        const_value = target_node.expr.value
+        const_value = re.sub("[^0-9]", "", const_value)
+        if const_type in {'int', 'long', 'short'}:
+            offset = random_pick_probless(replacement_offset)
+            new_value = str(int(const_value) + offset)
+            new_const = c_ast.Constant(type=const_type,
+                                       value=new_value,
+                                       coord=target_node.expr.coord)
+            target_node.expr = new_const
+        elif const_type in {'float', 'double'}:
+            offset = random_pick_probless(replacement_offset)
+            new_value = str(float(const_value) + offset)
+            new_const = c_ast.Constant(type=const_type,
+                                       value=new_value,
+                                       coord=target_node.expr.coord)
+            target_node.expr = new_const
+        elif const_type in {'char'}:
+            new_value = str(random_picker.gen_random('char'))
+            new_const = c_ast.Constant(type=const_type,
+                                       value=new_value,
+                                       coord=target_node.expr.coord)
+            target_node.expr = new_const
+        else:
+            print("Other type not supported.")
+            return False
+    elif type(target_node) == c_ast.BinaryOp:
+        if type(target_node.left) == c_ast.Constant:
+            const_type = target_node.left.type
+            const_value = target_node.left.value
+            const_value = re.sub("[^0-9]", "", const_value)
+            if const_type in {'int', 'long', 'short'}:
+                offset = random_pick_probless(replacement_offset)
+                new_value = str(int(const_value) + offset)
+                new_const = c_ast.Constant(type=const_type,
+                                           value=new_value,
+                                           coord=target_node.left.coord)
+                target_node.left = new_const
+            elif const_type in {'float', 'double'}:
+                offset = random_pick_probless(replacement_offset)
+                new_value = str(float(const_value) + offset)
+                new_const = c_ast.Constant(type=const_type,
+                                           value=new_value,
+                                           coord=target_node.left.coord)
+                target_node.left = new_const
+            elif const_type in {'char'}:
+                new_value = str(random_picker.gen_random('char'))
+                new_const = c_ast.Constant(type=const_type,
+                                           value=new_value,
+                                           coord=target_node.left.coord)
+                target_node.left = new_const
+            else:
+                print("Other type not supported.")
+                return False
+        else:
+            const_type = target_node.right.type
+            const_value = target_node.right.value
+            const_value = re.sub("[^0-9]", "", const_value)
+            if const_type in {'int', 'long', 'short'}:
+                offset = random_pick_probless(replacement_offset)
+                new_value = str(int(const_value) + offset)
+                new_const = c_ast.Constant(type=const_type,
+                                           value=new_value,
+                                           coord=target_node.right.coord)
+                target_node.right = new_const
+            elif const_type in {'float', 'double'}:
+                offset = random_pick_probless(replacement_offset)
+                new_value = str(float(const_value) + offset)
+                new_const = c_ast.Constant(type=const_type,
+                                           value=new_value,
+                                           coord=target_node.right.coord)
+                target_node.right = new_const
+            elif const_type in {'char'}:
+                new_value = str(random_picker.gen_random('char'))
+                new_const = c_ast.Constant(type=const_type,
+                                           value=new_value,
+                                           coord=target_node.right.coord)
+                target_node.right = new_const
+            else:
+                print("Other type not supported.")
+                return False
+    else:
+        print("Strange Type")
+        print(type(target_node))
+        return False
+    return True
+
+
+def defectify_DCCR_to_var(ast, task_name, logger, exp_spec_dict):
+    """
+
+    :param ast:
+    :param task_name:
+    :param logger:
+    :param exp_spec_dict:
+    :return:
+    """
+    print("testing dccr2var")
+    if "random_picker" in exp_spec_dict.keys():
+        random_picker_spec = exp_spec_dict["random_picker"]
+        random_picker = RandomPicker(random_picker_spec["random_int_list"], random_picker_spec["random_chr_list"])
+    else:
+        random_picker = RandomPicker(None, None)
+
+    global_ids, global_funcs = parse_fileAST_exts(ast)
+    # 1. randomly pick one function from global functions including main()
+    func = random_pick_probless(global_funcs)
+    if func is None:
+        print("NONE")
+        return False
+    print("test")
+    type_decl_visitor = TypeDeclVisitor(func)
+    type_decl_visitor.visit(func)
+    type_decls = type_decl_visitor.get_nodelist()
+    print("global decl")
+    print(global_ids)
+    print("global funcs")
+    print(global_funcs)
+    print("functionwise type decls")
+    print(type_decls)
+    op_visitor = OpVisitor(func)
+    op_visitor.generic_visit(func)
+    nodes = op_visitor.get_nodelist()
+    if len(nodes) == 0:
+        print("No nodes with op can be found.")
+        return False
+    available_nodes = []
+    for node in nodes:
+        if type(node) == c_ast.UnaryOp:
+            if type(node.expr) == c_ast.Constant:
+                available_nodes.append(node)
+        elif type(node) == c_ast.BinaryOp:
+            if type(node.left) == c_ast.Constant or type(node.right) == c_ast.Constant:
+                available_nodes.append(node)
+        else:
+            continue
+    if len(available_nodes) == 0:
+        print("No constant can be found.")
+        return False
+
+    target_node = random_pick_probless(available_nodes)
+
+    return True
+
+
+def defectify_DCCR(ast, task_name, logger, exp_spec_dict):
+    """
+
+    :param ast:
+    :param task_name:
+    :param logger:
+    :param exp_spec_dict:
+    :return:
+    """
+    DCCR_EQUAL_PROB = True
+    if "DCCR" in exp_spec_dict.keys():
+        dccr_spec = exp_spec_dict["DCCR"]
+        if len(dccr_spec) != 0:
+            DCCR_EQUAL_PROB = False
+    if DCCR_EQUAL_PROB:
+        func = globals()[random_pick_probless(["defectify_DCCR_to_const",
+                                               "defectify_DCCR_to_var"])]
+    else:
+        func = globals()["defectify_" + random_pick(list(dccr_spec.keys()), list(dccr_spec.values()))]
+    return func(ast, task_name, logger, exp_spec_dict)
 
 
 def defectify_test(ast, task_name, logger, exp_spec_dict):
