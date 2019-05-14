@@ -1,3 +1,4 @@
+from visitors.AssignmentVisitor import AssignmentVisitor
 from visitors.BinaryOpVisitor import BinaryOpVisitor
 from visitors.ConditionVisitor import ConditionVisitor
 from visitors.CompoundVisitor import CompoundVisitor
@@ -1633,6 +1634,75 @@ def defectify_DCCR(ast, task_name, logger, exp_spec_dict):
                                                "defectify_DCCR_to_var"])]
     else:
         func = globals()["defectify_" + random_pick(list(dccr_spec.keys()), list(dccr_spec.values()))]
+    return func(ast, task_name, logger, exp_spec_dict)
+
+
+def defectify_DRVA_to_const(ast, task_name, logger, exp_spec_dict):
+    """
+
+    :param ast:
+    :param task_name:
+    :param logger:
+    :param exp_spec_dict:
+    :return:
+    """
+    if "random_picker" in exp_spec_dict.keys():
+        random_picker_spec = exp_spec_dict["random_picker"]
+        random_picker = RandomPicker(random_picker_spec["random_int_list"], random_picker_spec["random_chr_list"])
+    else:
+        random_picker = RandomPicker(None, None)
+
+    global_ids, global_funcs = parse_fileAST_exts(ast)
+    # 1. randomly pick one function from global functions including main()
+    func = random_pick_probless(global_funcs)
+    if func is None:
+        print("NONE")
+        return False
+    assignment_visitor = AssignmentVisitor(func)
+    assignment_visitor.visit(func)
+    nodes = assignment_visitor.get_nodelist()
+    if len(nodes) == 0:
+        print("No Assignment node can be found.")
+        return False
+    available_nodes = [node for node in nodes if type(node.rvalue) == c_ast.ID]
+    if len(available_nodes) == 0:
+        print("No available node can be found.")
+        return False
+    target_node = random_pick_probless(available_nodes)
+    print(generator.visit(target_node))
+    return True
+
+def defectify_DRVA_to_var(ast, task_name, logger, exp_spec_dict):
+    """
+
+    :param ast:
+    :param task_name:
+    :param logger:
+    :param exp_spec_dict:
+    :return:
+    """
+    pass
+
+
+def defectify_DRVA(ast, task_name, logger, exp_spec_dict):
+    """
+
+    :param ast:
+    :param task_name:
+    :param logger:
+    :param exp_spec_dict:
+    :return:
+    """
+    DRVA_EQUAL_PROB = True
+    if "DRVA" in exp_spec_dict.keys():
+        drva_spec = exp_spec_dict["DRVA"]
+        if len(drva_spec) != 0:
+            DRVA_EQUAL_PROB = False
+    if DRVA_EQUAL_PROB:
+        func = globals()[random_pick_probless(["defectify_DRVA_to_const",
+                                               "defectify_DRVA_to_var"])]
+    else:
+        func = globals()["defectify_" + random_pick(list(drva_spec.keys()), list(drva_spec.values()))]
     return func(ast, task_name, logger, exp_spec_dict)
 
 
