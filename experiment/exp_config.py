@@ -430,9 +430,9 @@ DCCR_DB = {
     "src_dir": "/home/alex/PycharmProjects/c-defectifier/dataset/c_data_ok.db",
     "src_type": "db",
     "sift_option": "",
-    "limit": 10,
+    "limit": -1,
     "defects": {
-        "DCCR_to_var": 1.0
+        "DCCR": 1.0
     },
     "repeat_min": 1,
     "repeat_max": 2,
@@ -441,6 +441,10 @@ DCCR_DB = {
             "random_int_list": [0, 1, 2, 3, 5, 10, 20, 30, 40, 50, 100],
             "random_chr_list": [chr(i) for i in range(128)],
             "replacement_offset": [-4, -2, -1, 1, 2, 4]
+        },
+        "DCCR": {
+            "DCCR_to_const": 0.8,
+            "DCCR_to_var": 0.2
         }
     }
 }

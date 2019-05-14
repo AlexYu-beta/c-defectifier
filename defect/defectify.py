@@ -1441,6 +1441,7 @@ def defectify_DCCR_to_const(ast, task_name, logger, exp_spec_dict):
                                        value=new_value,
                                        coord=target_node.expr.coord)
             target_node.expr = new_const
+            logger.log_DCCR(target_node.coord, "to_const")
         elif const_type in {'float', 'double'}:
             offset = random_pick_probless(replacement_offset)
             new_value = str(float(const_value) + offset)
@@ -1448,12 +1449,14 @@ def defectify_DCCR_to_const(ast, task_name, logger, exp_spec_dict):
                                        value=new_value,
                                        coord=target_node.expr.coord)
             target_node.expr = new_const
+            logger.log_DCCR(target_node.coord, "to_const")
         elif const_type in {'char'}:
             new_value = str(random_picker.gen_random('char'))
             new_const = c_ast.Constant(type=const_type,
                                        value=new_value,
                                        coord=target_node.expr.coord)
             target_node.expr = new_const
+            logger.log_DCCR(target_node.coord, "to_const")
         else:
             print("Other type not supported.")
             return False
@@ -1469,6 +1472,7 @@ def defectify_DCCR_to_const(ast, task_name, logger, exp_spec_dict):
                                            value=new_value,
                                            coord=target_node.left.coord)
                 target_node.left = new_const
+                logger.log_DCCR(target_node.coord, "to_const")
             elif const_type in {'float', 'double'}:
                 offset = random_pick_probless(replacement_offset)
                 new_value = str(float(const_value) + offset)
@@ -1476,12 +1480,14 @@ def defectify_DCCR_to_const(ast, task_name, logger, exp_spec_dict):
                                            value=new_value,
                                            coord=target_node.left.coord)
                 target_node.left = new_const
+                logger.log_DCCR(target_node.coord, "to_const")
             elif const_type in {'char'}:
                 new_value = str(random_picker.gen_random('char'))
                 new_const = c_ast.Constant(type=const_type,
                                            value=new_value,
                                            coord=target_node.left.coord)
                 target_node.left = new_const
+                logger.log_DCCR(target_node.coord, "to_const")
             else:
                 print("Other type not supported.")
                 return False
@@ -1496,6 +1502,7 @@ def defectify_DCCR_to_const(ast, task_name, logger, exp_spec_dict):
                                            value=new_value,
                                            coord=target_node.right.coord)
                 target_node.right = new_const
+                logger.log_DCCR(target_node.coord, "to_const")
             elif const_type in {'float', 'double'}:
                 offset = random_pick_probless(replacement_offset)
                 new_value = str(float(const_value) + offset)
@@ -1503,12 +1510,14 @@ def defectify_DCCR_to_const(ast, task_name, logger, exp_spec_dict):
                                            value=new_value,
                                            coord=target_node.right.coord)
                 target_node.right = new_const
+                logger.log_DCCR(target_node.coord, "to_const")
             elif const_type in {'char'}:
                 new_value = str(random_picker.gen_random('char'))
                 new_const = c_ast.Constant(type=const_type,
                                            value=new_value,
                                            coord=target_node.right.coord)
                 target_node.right = new_const
+                logger.log_DCCR(target_node.coord, "to_const")
             else:
                 print("Other type not supported.")
                 return False
@@ -1541,16 +1550,26 @@ def defectify_DCCR_to_var(ast, task_name, logger, exp_spec_dict):
     if func is None:
         print("NONE")
         return False
-    print("test")
     type_decl_visitor = TypeDeclVisitor(func)
     type_decl_visitor.visit(func)
     type_decls = type_decl_visitor.get_nodelist()
-    print("global decl")
-    print(global_ids)
-    print("global funcs")
-    print(global_funcs)
-    print("functionwise type decls")
-    print(type_decls)
+    available_decls = []
+    params = func.decl.type.args.params if func.decl.type.args is not None else None
+    if params:
+        for param in params:
+            if not hasattr(param, "type"):
+                continue
+            if param.name not in {"argc", "argv"} \
+                    and type(param.type) not in {c_ast.ArrayDecl, c_ast.FuncDecl, c_ast.Struct, c_ast.PtrDecl}:
+                available_decls.append(param.type)
+    if len(global_ids) > 0:
+        for global_id in global_ids:
+            if type(global_id.type) not in {c_ast.ArrayDecl, c_ast.FuncDecl, c_ast.Struct, c_ast.PtrDecl}:
+                available_decls.append(global_id.type)
+    global_func_names = [item.decl.name for item in global_funcs]
+    for funcwise_decl in type_decls:
+        if funcwise_decl.declname not in global_func_names:
+            available_decls.append(funcwise_decl)
     op_visitor = OpVisitor(func)
     op_visitor.generic_visit(func)
     nodes = op_visitor.get_nodelist()
@@ -1572,7 +1591,26 @@ def defectify_DCCR_to_var(ast, task_name, logger, exp_spec_dict):
         return False
 
     target_node = random_pick_probless(available_nodes)
-
+    replace_var = random_pick_probless(available_decls)
+    if replace_var is None:
+        print("No replacement found.")
+        return False
+    if type(target_node) == c_ast.UnaryOp:
+        target_node.expr = c_ast.ID(name=replace_var.declname,
+                                    coord=target_node.expr.coord)
+        logger.log_DCCR(target_node.expr.coord, "to_var")
+    elif type(target_node) == c_ast.BinaryOp:
+        if type(target_node.left) == c_ast.Constant:
+            target_node.left = c_ast.ID(name=replace_var.declname,
+                                        coord=target_node.left.coord)
+            logger.log_DCCR(target_node.left.coord, "to_var")
+        else:
+            target_node.right = c_ast.ID(name=replace_var.declname,
+                                         coord=target_node.right.coord)
+            logger.log_DCCR(target_node.right.coord, "to_var")
+    else:
+        print("strange")
+        return False
     return True
 
 
