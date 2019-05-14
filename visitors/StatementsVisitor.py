@@ -21,6 +21,8 @@ class StatementsVisitor(c_ast.NodeVisitor):
         """
         if "stmts" in node.__slots__:
             self.nodelist.append(node)
+        else:
+            pass
         for c in node:
             self.generic_visit(c)
 

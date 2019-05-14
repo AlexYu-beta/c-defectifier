@@ -1,5 +1,6 @@
 from visitors.BinaryOpVisitor import BinaryOpVisitor
 from visitors.ConditionVisitor import ConditionVisitor
+from visitors.CompoundVisitor import CompoundVisitor
 from visitors.DeclVisitor import DeclVisitor
 from visitors.FuncCallVisitor import FuncCallVisitor
 from visitors.IDVisitor import IDVisitor
@@ -1257,26 +1258,48 @@ def defectify_SMOV(ast, task_name, logger, exp_spec_dict):
     :param exp_spec_dict:
     :return:
     """
-    statements_visitor = StatementsVisitor(ast)
+    # statements_visitor = StatementsVisitor(ast)
+    statements_visitor = CompoundVisitor(ast)
+    # statements_visitor.generic_visit(ast)
     statements_visitor.visit(ast)
     stmts_nodes = statements_visitor.get_nodelist()
-    available_stmts = []
+    available_nodes = []
+    available_decls = []
+    available_body = []
     for stmts_node in stmts_nodes:
-        stmts_node.stmts = list(filter(lambda x: type(x) != c_ast.Decl, stmts_node.stmts))
-        if len(stmts_node.stmts) > 1:
-            available_stmts.append(stmts_node.stmts)
-    if len(available_stmts) == 0:
+        if stmts_node.block_items is None:
+            continue
+        # stmts_node.stmts = list(filter(lambda x: type(x) not in {c_ast.Decl, c_ast.FuncDecl, c_ast.PtrDecl, c_ast.Struct}, stmts_node.stmts))
+        decls = list(
+            filter(lambda x: type(x) in {c_ast.Decl, c_ast.FuncDecl, c_ast.PtrDecl, c_ast.Struct},
+                   stmts_node.block_items))
+        body = list(
+            filter(lambda x: type(x) not in {c_ast.Decl, c_ast.FuncDecl, c_ast.PtrDecl, c_ast.Struct},
+                   stmts_node.block_items))
+        # if len(stmts_node.stmts) > 1:
+        #     available_stmts.append(stmts_node.stmts)
+        if len(body) > 1:
+            available_nodes.append(stmts_node)
+            available_decls.append(decls)
+            available_body.append(body)
+    if len(available_nodes) == 0:
         print("Warning: No available statement block found.")
         return False
-    target_stmts = random_pick_probless(available_stmts)
-    length = len(target_stmts)
+    target_node = random_pick_probless(available_nodes)
+    target_stmts = target_node.block_items
+    index = available_nodes.index(target_node)
+    decls = available_decls[index]
+    body = available_body[index]
+    length = len(body)
     distance = get_randint(1, length - 1)
-    stmt_1 = random_pick_probless(target_stmts)
-    index_1 = target_stmts.index(stmt_1)
+    stmt_1 = random_pick_probless(body)
+    index_1 = body.index(stmt_1)
     index_2 = (index_1 + distance) % length
-    temp = target_stmts[index_1]
-    target_stmts[index_1] = target_stmts[index_2]
-    target_stmts[index_2] = temp
+    temp = body[index_1]
+    body[index_1] = body[index_2]
+    body[index_2] = temp
+    result = decls + body
+    target_node.block_items = result
     logger.log_SMOV(target_stmts[index_1].coord, target_stmts[index_2].coord)
     # retrieve ast
     # temp = target_stmts[index_1]
