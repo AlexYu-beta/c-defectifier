@@ -1,3 +1,4 @@
+from visitors.ArrayDeclVisitor import ArrayDeclVisitor
 from visitors.AssignmentVisitor import AssignmentVisitor
 from visitors.BinaryOpVisitor import BinaryOpVisitor
 from visitors.ConditionVisitor import ConditionVisitor
@@ -5,7 +6,6 @@ from visitors.CompoundVisitor import CompoundVisitor
 from visitors.DeclVisitor import DeclVisitor
 from visitors.FuncCallVisitor import FuncCallVisitor
 from visitors.IDVisitor import IDVisitor
-from visitors.IfVisitor import IfVisitor
 from visitors.OpVisitor import OpVisitor
 from visitors.StatementsVisitor import StatementsVisitor
 from visitors.StatementVisitor import StatementVisitor
@@ -1868,6 +1868,44 @@ def defectify_DRWV(ast, task_name, logger, exp_spec_dict):
     matched_id = random_pick_probless(matched_ids)
     target_id.name = matched_id
     logger.log_DRWV(target_node.coord)
+    return True
+
+
+def defectify_DCCA(ast, task_name, logger, exp_spec_dict):
+    """
+
+    :param ast:
+    :param task_name:
+    :param logger:
+    :param exp_spec_dict:
+    :return:
+    """
+    if "random_picker" in exp_spec_dict.keys():
+        random_picker_spec = exp_spec_dict["random_picker"]
+        random_picker = RandomPicker(random_picker_spec["random_int_list"], random_picker_spec["random_chr_list"])
+    else:
+        random_picker = RandomPicker(None, None)
+
+    array_decl_visitor = ArrayDeclVisitor(ast)
+    array_decl_visitor.visit(ast)
+    array_decls = array_decl_visitor.get_nodelist()
+    if len(array_decls) == 0:
+        print("No array declaration found.")
+        return False
+    random_array_len_list = random_picker_spec["random_array_len_list"]
+    target_array_decl = random_pick_probless(array_decls)
+    extra = []
+    if type(target_array_decl.dim) == c_ast.Constant:
+        dim_value = int(target_array_decl.dim.value)
+        extra.append(dim_value * 10)
+        extra.append(dim_value + 1)
+        if dim_value > 1:
+            extra.append(dim_value - 1)
+    target_array_decl.dim = c_ast.Constant(type='int',
+                                           value=str(random_pick_probless(random_array_len_list + extra)),
+                                           coord=target_array_decl.coord)
+    logger.log_DCCA(target_array_decl.coord, "rand")
+
     return True
 
 

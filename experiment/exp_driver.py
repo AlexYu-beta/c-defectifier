@@ -233,6 +233,7 @@ def test():
     code_1 = r'''
     int main(){
     int i,n,sum;
+    int a[10];
     sum = 0;
     for (i = 0; i < n; i++)
     {
@@ -258,6 +259,6 @@ def test():
 
 
 if __name__ == '__main__':
-    task_name = "Test11_DRWV_DB"
+    task_name = "Test12_DCCA_DB"
     drive(task_name)
     # test()
