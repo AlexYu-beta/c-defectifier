@@ -1653,6 +1653,12 @@ def defectify_DRVA_to_const(ast, task_name, logger, exp_spec_dict):
         random_picker = RandomPicker(None, None)
 
     global_ids, global_funcs = parse_fileAST_exts(ast)
+    id_name_map = {}
+    for global_id in global_ids:
+        if type(global_id) not in {c_ast.ArrayDecl, c_ast.TypeDecl, c_ast.Struct, c_ast.PtrDecl} \
+                and type(global_id.type) not in {c_ast.ArrayDecl, c_ast.TypeDecl, c_ast.Struct, c_ast.PtrDecl} \
+                and type(global_id.type.type) not in {c_ast.ArrayDecl, c_ast.TypeDecl, c_ast.Struct, c_ast.PtrDecl}:
+            id_name_map[global_id.name] = global_id.type.type.names[0]
     # 1. randomly pick one function from global functions including main()
     func = random_pick_probless(global_funcs)
     if func is None:
@@ -1669,8 +1675,23 @@ def defectify_DRVA_to_const(ast, task_name, logger, exp_spec_dict):
         print("No available node can be found.")
         return False
     target_node = random_pick_probless(available_nodes)
-    print(generator.visit(target_node))
+    target_id = target_node.rvalue
+    type_decl_visitor = TypeDeclVisitor(func)
+    type_decl_visitor.visit(func)
+    type_decls = type_decl_visitor.get_nodelist()
+    for type_decl in type_decls:
+        if type(type_decl.type) not in {c_ast.Struct}:
+            id_name_map[type_decl.declname] = type_decl.type.names[0]
+    if target_id.name in id_name_map.keys():
+        target_id_type = id_name_map[target_id.name]
+    else:
+        return False
+    target_node.rvalue = c_ast.Constant(type=target_id_type,
+                                        value=random_picker.gen_random(target_id_type),
+                                        coord=target_node.rvalue.coord)
+    logger.log_DRVA(target_node.coord, "to_const")
     return True
+
 
 def defectify_DRVA_to_var(ast, task_name, logger, exp_spec_dict):
     """
@@ -1681,7 +1702,73 @@ def defectify_DRVA_to_var(ast, task_name, logger, exp_spec_dict):
     :param exp_spec_dict:
     :return:
     """
-    pass
+    if "random_picker" in exp_spec_dict.keys():
+        random_picker_spec = exp_spec_dict["random_picker"]
+        random_picker = RandomPicker(random_picker_spec["random_int_list"], random_picker_spec["random_chr_list"])
+    else:
+        random_picker = RandomPicker(None, None)
+
+    global_ids, global_funcs = parse_fileAST_exts(ast)
+    id_name_map = {}
+    for global_id in global_ids:
+        if type(global_id) not in {c_ast.ArrayDecl, c_ast.TypeDecl, c_ast.Struct, c_ast.PtrDecl} \
+                and type(global_id.type) not in {c_ast.ArrayDecl, c_ast.TypeDecl, c_ast.Struct, c_ast.PtrDecl} \
+                and type(global_id.type.type) not in {c_ast.ArrayDecl, c_ast.TypeDecl, c_ast.Struct, c_ast.PtrDecl}:
+            id_name_map[global_id.name] = global_id.type.type.names[0]
+    # 1. randomly pick one function from global functions including main()
+    func = random_pick_probless(global_funcs)
+    if func is None:
+        print("NONE")
+        return False
+    assignment_visitor = AssignmentVisitor(func)
+    assignment_visitor.visit(func)
+    nodes = assignment_visitor.get_nodelist()
+    if len(nodes) == 0:
+        print("No Assignment node can be found.")
+        return False
+    available_nodes = [node for node in nodes if type(node.rvalue) == c_ast.ID]
+    if len(available_nodes) == 0:
+        print("No available node can be found.")
+        return False
+    target_node = random_pick_probless(available_nodes)
+    target_id = target_node.rvalue
+    id_visitor = IDVisitor(func)
+    id_visitor.visit(func)
+    ids = id_visitor.get_id_list()
+    global_func_names = [func.decl.name for func in global_funcs]
+    for id in ids:
+        if id.name in global_func_names:
+            ids.remove(id)
+    id_name_set = set([id.name for id in ids])
+    if len(id_name_set) + len(global_ids) < 2:
+        print("Warning: no replacement found.")
+        return False
+    ids_remain = id_name_set - {target_id.name}
+    global_ids_name = [item.name for item in global_ids]
+    ids_remain = ids_remain.union(set(global_ids_name) - {target_id.name})
+
+    type_decl_visitor = TypeDeclVisitor(func)
+    type_decl_visitor.visit(func)
+    type_decls = type_decl_visitor.get_nodelist()
+    for type_decl in type_decls:
+        if type(type_decl.type) not in {c_ast.Struct}:
+            id_name_map[type_decl.declname] = type_decl.type.names[0]
+    if target_id.name in id_name_map.keys():
+        target_id_type = id_name_map[target_id.name]
+    else:
+        return False
+    matched_ids = []
+    for id_remain in ids_remain:
+        if id_remain in id_name_map.keys() and id_name_map[id_remain] == target_id_type:
+            matched_ids.append(id_remain)
+    if len(matched_ids) == 0:
+        print("Warning: no replacement found.")
+        return False
+    # 4. randomly pick one matched identifier
+    matched_id = random_pick_probless(matched_ids)
+    target_id.name = matched_id
+    logger.log_DRVA(target_node.coord, "to_var")
+    return True
 
 
 def defectify_DRVA(ast, task_name, logger, exp_spec_dict):

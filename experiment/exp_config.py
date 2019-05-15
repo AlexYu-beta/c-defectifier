@@ -454,9 +454,9 @@ DRVA_DB = {
     "src_dir": "/home/alex/PycharmProjects/c-defectifier/dataset/c_data_ok.db",
     "src_type": "db",
     "sift_option": "",
-    "limit": 10,
+    "limit": -1,
     "defects": {
-        "DRVA": 1.0
+        "DRVA_to_var": 1.0
     },
     "repeat_min": 1,
     "repeat_max": 2,
