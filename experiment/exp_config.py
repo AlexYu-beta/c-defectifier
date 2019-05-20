@@ -271,6 +271,10 @@ OAIS_1_DB = {
         "random_picker": {
             "random_int_list": [0, 1, 2, 3, 5, 10, 20, 30, 40, 50, 100],
             "random_chr_list": [chr(i) for i in range(128)]
+        },
+        "OAIS": {
+            "OAIS_add_op": 0.8,
+            "OAIS_del_op": 0.2
         }
     }
 }
@@ -521,6 +525,6 @@ def generate_experiment_config(task_name):
 
 
 if __name__ == '__main__':
-    task_name = "Test12_DCCA_DB"
-    conf = DCCA_DB
+    task_name = "Test05_OAIS_DB"
+    conf = OAIS_1_DB
     generate_experiment_config(task_name)

@@ -3,6 +3,7 @@ from visitors.AssignmentVisitor import AssignmentVisitor
 from visitors.BinaryOpVisitor import BinaryOpVisitor
 from visitors.ConditionVisitor import ConditionVisitor
 from visitors.CompoundVisitor import CompoundVisitor
+from visitors.DaddyVisitor import DaddyVisitor
 from visitors.DeclVisitor import DeclVisitor
 from visitors.FuncCallVisitor import FuncCallVisitor
 from visitors.IDVisitor import IDVisitor
@@ -1106,15 +1107,13 @@ def defectify_SDFN(ast, task_name, logger, exp_spec_dict):
     return True
 
 
-def defectify_OAIS(ast, task_name, logger, exp_spec_dict):
+def defectify_OAIS_add_op(ast, task_name, logger, exp_spec_dict):
     """
-    OAIS is just like to_expr in SRIF, but different in sequence-flow
-    {
-    }
+
     :param ast:
     :param task_name:
     :param logger:
-    :param exp_spec_dict
+    :param exp_spec_dict:
     :return:
     """
     if "random_picker" in exp_spec_dict.keys():
@@ -1175,7 +1174,7 @@ def defectify_OAIS(ast, task_name, logger, exp_spec_dict):
                                               left=temp,
                                               right=right_const,
                                               coord=temp.coord)
-        logger.log_OAIS(target_node.coord)
+        logger.log_OAIS(target_node.coord, "add_op")
         # retrieve ast
         # target_node.left = temp
         return True
@@ -1203,10 +1202,106 @@ def defectify_OAIS(ast, task_name, logger, exp_spec_dict):
                                                left=temp,
                                                right=right_const,
                                                coord=temp.coord)
-        logger.log_OAIS(target_node.coord)
+        logger.log_OAIS(target_node.coord, "add_op")
         # retrieve ast
         # target_node.right = temp
         return True
+
+
+def defectify_OAIS_del_op(ast, task_name, logger, exp_spec_dict):
+    """
+
+    :param ast:
+    :param task_name:
+    :param logger:
+    :param exp_spec_dict:
+    :return:
+    """
+    if "random_picker" in exp_spec_dict.keys():
+        random_picker_spec = exp_spec_dict["random_picker"]
+        random_picker = RandomPicker(random_picker_spec["random_int_list"], random_picker_spec["random_chr_list"])
+    else:
+        random_picker = RandomPicker(None, None)
+
+    global_ids, global_funcs = parse_fileAST_exts(ast)
+    id_name_map = {}
+    for global_id in global_ids:
+        if type(global_id) not in {c_ast.ArrayDecl, c_ast.TypeDecl, c_ast.Struct, c_ast.PtrDecl} \
+                and type(global_id.type) not in {c_ast.ArrayDecl, c_ast.TypeDecl, c_ast.Struct, c_ast.PtrDecl} \
+                and type(global_id.type.type) not in {c_ast.ArrayDecl, c_ast.TypeDecl, c_ast.Struct, c_ast.PtrDecl}:
+            id_name_map[global_id.name] = global_id.type.type.names[0]
+    func = random_pick_probless(global_funcs)
+    if func is None:
+        print("NONE")
+        return False
+    type_decl_visitor = TypeDeclVisitor(func)
+    type_decl_visitor.visit(func)
+    type_decls = type_decl_visitor.get_nodelist()
+    for type_decl in type_decls:
+        if type(type_decl.type) not in {c_ast.Struct}:
+            id_name_map[type_decl.declname] = type_decl.type.names[0]
+    binary_visitor = BinaryOpVisitor(func)
+    binary_visitor.visit(func)
+    available_nodes = []
+    binary_ops = binary_visitor.get_nodelist()
+    for binary_op in binary_ops:
+        if binary_op.op in c_arithmetic_binary_operator_set:
+            if type(binary_op.left) == c_ast.ID or type(binary_op.right) == c_ast.ID:
+                available_nodes.append(binary_op)
+    if len(available_nodes) == 0:
+        print("no available nodes")
+        return False
+    target_node = random_pick_probless(available_nodes)
+    if type(target_node.left) == c_ast.ID:
+        daddy_visitor = DaddyVisitor(ast, target_node)
+        daddy_visitor.visit(ast)
+        dad = daddy_visitor.get_dad()
+        if dad is None:
+            print("Orphan")
+            return False
+        for slot in dad.__slots__:
+            if dad.__getattribute__(slot) == target_node:
+                setattr(dad, slot, target_node.left)
+                break
+        logger.log_OAIS(target_node.coord, "del_op")
+        return True
+    if type(target_node.right) == c_ast.ID:
+        daddy_visitor = DaddyVisitor(ast, target_node)
+        daddy_visitor.visit(ast)
+        dad = daddy_visitor.get_dad()
+        if dad is None:
+            print("Orphan")
+            return False
+        for slot in dad.__slots__:
+            if dad.__getattribute__(slot) == target_node:
+                setattr(dad, slot, target_node.left)
+                break
+        logger.log_OAIS(target_node.coord, "del_op")
+        return True
+
+
+def defectify_OAIS(ast, task_name, logger, exp_spec_dict):
+    """
+    OAIS is just like to_expr in SRIF, but different in sequence-flow
+    {
+    }
+    :param ast:
+    :param task_name:
+    :param logger:
+    :param exp_spec_dict
+    :return:
+    """
+    OAIS_EQUAL_PROB = True
+    if "OAIS" in exp_spec_dict.keys():
+        oais_spec = exp_spec_dict["OAIS"]
+        if len(oais_spec) != 0:
+            OAIS_EQUAL_PROB = False
+    if OAIS_EQUAL_PROB:
+        func = globals()[random_pick_probless(["defectify_OAIS_add_op",
+                                               "defectify_OAIS_del_op"])]
+    else:
+        func = globals()["defectify_" + random_pick(list(oais_spec.keys()), list(oais_spec.values()))]
+    return func(ast, task_name, logger, exp_spec_dict)
 
 
 def defectify_STYP(ast, task_name, logger, exp_spec_dict):

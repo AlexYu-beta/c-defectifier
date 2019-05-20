@@ -95,7 +95,7 @@ class Logger:
         }
         self.log_items.append(log_item)
 
-    def log_OAIS(self, position):
+    def log_OAIS(self, position, pattern):
         timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
         log_item = {
             "timestamp": timestamp,
@@ -103,7 +103,7 @@ class Logger:
             "column_num": position.column,
             "def_type": "OAIS",
             "parameters": {
-                "action": None
+                "action": pattern
             }
         }
         self.log_items.append(log_item)
