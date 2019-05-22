@@ -1,6 +1,7 @@
 from __future__ import print_function
 import os
 import sys
+import json
 
 from utils.fs_util import init_experiment_fs, generate_exp_output, config_dict, generate_exp_output_db
 from utils.db_util import DBConnection
@@ -101,6 +102,7 @@ def drive(task_name):
                 continue
             success = False
             success_times = 0
+            annotations = {}
             for i in range(get_randint(repeat_min, repeat_max)):
                 success = False
                 tries = 0
@@ -112,13 +114,14 @@ def drive(task_name):
                     success = defectify(ast, task_name, defect, logger, exp_spec_dict)
                 if success:
                     success_times += 1
+                    annotations[str(success_times)] = success
             if success_times == 0:
                 logger.log_nothing()
             else:
                 count += 1
                 gen_code = generate_exp_output_db(ast, headers)
                 # print(gen_code)
-                db_target.execute(INSERT_DEFECTIFY, (count, problem_id, submit_id, code, gen_code))
+                db_target.execute(INSERT_DEFECTIFY, (count, problem_id, submit_id, code, gen_code, json.dumps(annotations)))
         logger.write_log()
     else:
         print("Err: Wrong source type.")
@@ -259,6 +262,6 @@ def test():
 
 
 if __name__ == '__main__':
-    task_name = "Test05_OAIS_DB"
+    task_name = "Test02_OILN_DB"
     drive(task_name)
     # test()

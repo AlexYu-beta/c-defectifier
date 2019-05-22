@@ -43,11 +43,12 @@ create table defectify
   problem_id        TEXT,
   submit_id         TEXT,
   code              TEXT,
-  gen_code          TEXT
+  gen_code          TEXT,
+  annotations       TEXT
 );
 '''
 
 INSERT_DEFECTIFY = r'''
-insert into defectify(id, problem_id, submit_id, code, gen_code)
-values (?,?,?,?,?);
+insert into defectify(id, problem_id, submit_id, code, gen_code, annotations)
+values (?,?,?,?,?,?);
 '''

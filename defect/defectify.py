@@ -52,10 +52,20 @@ def defectify_ORRN(ast, task_name, logger, exp_spec_dict):
     # 3. randomly pick a replacement
     replace_op = random_pick_probless(list(replace_ops))
     # 4. replace
+    line_code = generator.visit(node).split("\n")[0]
     node.cond.op = replace_op
     # create log
     logger.log_ORRN(node.coord, current_op, replace_op)
-    return True
+    line_code_def = generator.visit(node).split("\n")[0]
+    annotation = {
+        "class": "ORRN",
+        "line_num": node.coord.line,
+        "line_code": line_code,
+        "line_code_def": line_code_def,
+        "op": current_op,
+        "op_replace": replace_op
+    }
+    return annotation
 
 
 def defectify_OILN_add_and(ast, task_name, logger, exp_spec_dict):
@@ -101,7 +111,6 @@ def defectify_OILN_add_and(ast, task_name, logger, exp_spec_dict):
     nodes = condition_visitor.get_nodelist()
     if len(nodes) == 0:
         print("No condition node can be found")
-        print(generator.visit(func))
         return False
     # 2. randomly pick one if node from current function scope
     node = random_pick_probless(nodes)
@@ -131,6 +140,7 @@ def defectify_OILN_add_and(ast, task_name, logger, exp_spec_dict):
     if id_type == "NOT_DECLARED":
         print("Err: Identifier not declared.")
         return False
+    line_code = generator.visit(node).split("\n")[0]
     # 4. use a simplified strategy to construct randomized branch condition
     op_add = random_pick_probless(["==", "!=", ">", "<", ">=", "<="])
     left_add = c_ast.ID(name=id)
@@ -155,6 +165,14 @@ def defectify_OILN_add_and(ast, task_name, logger, exp_spec_dict):
         logger.log_OILN(node.cond.coord, "add_and")
     else:
         logger.log_OILN(node.coord, "add_and")
+    line_code_def = generator.visit(node).split("\n")[0]
+    annotation = {
+        "class": "OILN_add_and",
+        "line_num": node.coord.line,
+        "line_code": line_code,
+        "line_code_def": line_code_def,
+        "cond_add": generator.visit(cond_add)
+    }
     # *5. retrieve ast
     # if add_left:
     #     node.cond = c_ast.BinaryOp(op=node.cond.right.op,
@@ -166,7 +184,7 @@ def defectify_OILN_add_and(ast, task_name, logger, exp_spec_dict):
     #                                left=node.cond.left.left,
     #                                right=node.cond.left.right,
     #                                coord=node.cond.coord)
-    return True
+    return annotation
 
 
 def defectify_OILN_add_or(ast, task_name, logger, exp_spec_dict):
@@ -241,6 +259,7 @@ def defectify_OILN_add_or(ast, task_name, logger, exp_spec_dict):
     if id_type == "NOT_DECLARED":
         print("Err: Identifier not declared.")
         return False
+    line_code = generator.visit(node).split("\n")[0]
     # 4. use a simplified strategy to construct randomized branch condition
     op_add = random_pick_probless(["==", "!=", ">", "<", ">=", "<="])
     left_add = c_ast.ID(name=id)
@@ -265,6 +284,14 @@ def defectify_OILN_add_or(ast, task_name, logger, exp_spec_dict):
         logger.log_OILN(node.cond.coord, "add_or")
     else:
         logger.log_OILN(node.coord, "add_or")
+    line_code_def = generator.visit(node).split("\n")[0]
+    annotation = {
+        "class": "OILN_add_or",
+        "line_num": node.coord.line,
+        "line_code": line_code,
+        "line_code_def": line_code_def,
+        "cond_add": generator.visit(cond_add)
+    }
     # *5. retrieve ast
     # if add_left:
     #     node.cond = c_ast.BinaryOp(op=node.cond.right.op,
@@ -276,7 +303,7 @@ def defectify_OILN_add_or(ast, task_name, logger, exp_spec_dict):
     #                                left=node.cond.left.left,
     #                                right=node.cond.left.right,
     #                                coord=node.cond.coord)
-    return True
+    return annotation
 
 
 def defectify_OILN_del_and(ast, task_name, logger, exp_spec_dict):
@@ -320,17 +347,32 @@ def defectify_OILN_del_and(ast, task_name, logger, exp_spec_dict):
     if node.cond.op != "&&":
         print("Warning: no && can be deleted.")
         return False
+    line_code = generator.visit(node).split("\n")[0]
     # 3. save previous conditions
     temp = node.cond
     del_left = random_pick_probless([True, False])
-    if del_left:
-        node.cond = node.cond.right
-    else:
-        node.cond = node.cond.left
+    try:
+        if del_left:
+            cond_del = node.cond.left
+            node.cond = node.cond.right
+
+        else:
+            cond_del = node.cond.right
+            node.cond = node.cond.left
+    except:
+        return False
     logger.log_OILN(node.coord, "del_and")
+    line_code_def = generator.visit(node).split("\n")[0]
+    annotation = {
+        "class": "OILN_del_and",
+        "line_num": node.coord.line,
+        "line_code": line_code,
+        "line_code_def": line_code_def,
+        "cond_del": generator.visit(cond_del)
+    }
     # *4. retrieve previous conditions
     # cond = temp
-    return True
+    return annotation
 
 
 def defectify_OILN_del_or(ast, task_name, logger, exp_spec_dict):
@@ -374,17 +416,32 @@ def defectify_OILN_del_or(ast, task_name, logger, exp_spec_dict):
     if node.cond.op != "||":
         print("Warning: no || can be deleted.")
         return False
+    line_code = generator.visit(node).split("\n")[0]
     # 3. save previous conditions
     temp = node.cond
     del_left = random_pick_probless([True, False])
-    if del_left:
-        node.cond = node.cond.right
-    else:
-        node.cond = node.cond.left
+    try:
+        if del_left:
+            cond_del = node.cond.left
+            node.cond = node.cond.right
+
+        else:
+            cond_del = node.cond.right
+            node.cond = node.cond.left
+    except:
+        return False
     logger.log_OILN(node.coord, "del_or")
+    line_code_def = generator.visit(node).split("\n")[0]
+    annotation = {
+        "class": "OILN_del_or",
+        "line_num": node.coord.line,
+        "line_code": line_code,
+        "line_code_def": line_code_def,
+        "cond_del": generator.visit(cond_del)
+    }
     # *4. retrieve previous conditions
     # cond = temp
-    return True
+    return annotation
 
 
 def defectify_OILN_negate_cond(ast, task_name, logger, exp_spec_dict):
@@ -424,6 +481,7 @@ def defectify_OILN_negate_cond(ast, task_name, logger, exp_spec_dict):
     if type(node.cond) != c_ast.BinaryOp:
         print("Warning: no binary operation can be found, no || can be deleted.")
         return False
+    line_code = generator.visit(node).split("\n")[0]
     if type(node.cond.left) == c_ast.UnaryOp and node.cond.left.op == '!':
         # find a ! expression
         # save current part of ast
@@ -438,8 +496,6 @@ def defectify_OILN_negate_cond(ast, task_name, logger, exp_spec_dict):
         # retrieve ast
         # node.cond.left = temp
     else:
-        print(node.cond.left.coord)
-        print(generator.visit(node.cond.left))
         node.cond.left = c_ast.UnaryOp(op='!',
                                        expr=node.cond.left,
                                        coord=node.cond.left.coord)
@@ -449,7 +505,14 @@ def defectify_OILN_negate_cond(ast, task_name, logger, exp_spec_dict):
             logger.log_OILN(node.coord, "negate")
         # retrieve ast
         # node.cond.left = node.cond.left.expr
-    return True
+    line_code_def = generator.visit(node).split("\n")[0]
+    annotation = {
+        "class": "OILN_negate_cond",
+        "line_num": node.coord.line,
+        "line_code": line_code,
+        "line_code_def": line_code_def,
+    }
+    return annotation
 
 
 def defectify_OILN(ast, task_name, logger, exp_spec_dict):
@@ -1429,7 +1492,6 @@ def defectify_OFPO(ast, task_name, logger, exp_spec_dict):
         params = global_func.decl.type.args.params
         param_type_map = {}
         for param in params:
-            print("test")
             if type(param) == c_ast.ID:
                 continue
             param_type = param.type.type
