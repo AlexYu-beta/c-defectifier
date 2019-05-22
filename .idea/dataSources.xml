@@ -45,11 +45,11 @@
         <property name="enable_load_extension" value="true" />
       </driver-properties>
     </data-source>
-    <data-source source="LOCAL" name="test12" uuid="3defb173-a038-4b7d-93a0-833548482e88">
+    <data-source source="LOCAL" name="comprehensive_db_test" uuid="1c471d06-49ad-4500-95c5-a202521b49b6">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
-      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/exp_output/Test12_DCCA_DB/Test12_DCCA_DB.db</jdbc-url>
+      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/exp_output/comprehensive_db_test/comprehensive_db_test.db</jdbc-url>
       <driver-properties>
         <property name="enable_load_extension" value="true" />
       </driver-properties>

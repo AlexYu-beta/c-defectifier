@@ -512,6 +512,49 @@ DCCA_DB = {
 }
 
 
+comprehensive_db_test = {
+    "task_name": "comprehensive_db_test",
+    "src_dir": "/home/alex/PycharmProjects/c-defectifier/dataset/c_data_ok.db",
+    "src_type": "db",
+    "sift_option": "",
+    "limit": -1,
+    "defects": {
+        "SRIF_replace_var": 1/22,
+        "SRIF_to_expr": 1/22,
+        "SRIF_wrap_func_call": 1/22,
+        "SRIF_unwrap_func_call": 1/22,
+        "SDFN": 1/22,
+        "STYP": 1/22,
+        "SMOV": 1/22,
+        "ORRN": 1/22,
+        "OILN_add_and": 1/22,
+        "OILN_add_or": 1/22,
+        "OILN_del_and": 1/22,
+        "OILN_del_or": 1/22,
+        "OILN_negate_cond": 1/22,
+        "OAIS_add_op": 1/22,
+        "OAIS_del_op": 1/22,
+        "OFPO": 1/22,
+        "DCCR_to_const": 1/22,
+        "DCCR_to_var": 1/22,
+        "DRVA_to_const": 1/22,
+        "DRVA_to_var": 1/22,
+        "DRWV": 1/22,
+        "DCCA": 1/22
+    },
+    "repeat_min": 1,
+    "repeat_max": 1,
+    "specifications": {
+        "random_picker": {
+            "random_int_list": [0, 1, 2, 3, 5, 10, 20, 30, 40, 50, 100],
+            "random_chr_list": [chr(i) for i in range(128)],
+            "replacement_offset": [-4, -2, -1, 1, 2, 4],
+            "random_array_len_list": [2, 3, 4, 5, 6, 7, 8, 10, 20, 30, 40, 50, 100]
+        }
+    }
+}
+
+
 def generate_experiment_config(task_name):
     """
     user's interface to generate an experiment configuration
@@ -525,6 +568,6 @@ def generate_experiment_config(task_name):
 
 
 if __name__ == '__main__':
-    task_name = "Test12_DCCA_DB"
-    conf = DCCA_DB
+    task_name = "comprehensive_db_test"
+    conf = comprehensive_db_test
     generate_experiment_config(task_name)

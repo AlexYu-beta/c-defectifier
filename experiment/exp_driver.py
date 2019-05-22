@@ -249,8 +249,41 @@ def test():
     }
 }
     '''
+
+    code_t = '''int main()
+{
+  unsigned long n;
+  scanf("%lu", &n);
+  long *a = malloc(n * (sizeof(long)));
+  long *b = malloc(n * (sizeof(long)));
+  long i;
+  unsigned long long brSektora = 0;
+  long pocetak;
+  long prethodni;
+  for (i = 0; i < n; i++)
+  {
+    scanf("%ld", &a[i]);
+    b[a[i] - 1] = i;
+    if (a[i] == 1)
+      pocetak = i;
+
+  }
+
+  prethodni = pocetak;
+  for (i = 1; i < n; i++)
+  {
+    if ((b[i] - b[i - brSektora]) > 0)
+      brSektora += b[i] - b[i - 1];
+    else
+      brSektora += b[i - 1] - b[i];
+
+  }
+
+  printf("%llu", brSektora);
+  return 0;
+}'''
     parser = c_parser.CParser()
-    ast = parser.parse(code_1)
+    ast = parser.parse(code_t)
     print(ast)
     # logger = Logger("test")
     # exp_spec_dict = {
@@ -262,6 +295,6 @@ def test():
 
 
 if __name__ == '__main__':
-    task_name = "Test12_DCCA_DB"
-    drive(task_name)
-    # test()
+    task_name = "comprehensive_db_test"
+    # drive(task_name)
+    test()
