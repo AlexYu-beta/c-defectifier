@@ -2206,7 +2206,9 @@ def defectify_DRWV(ast, task_name, logger, exp_spec_dict):
         print("No available node can be found.")
         return False
     target_node = random_pick_probless(available_nodes)
+    line_code = generator.visit(target_node).split("\n")[0]
     target_id = target_node.lvalue
+    temp = target_id.name
     id_visitor = IDVisitor(func)
     id_visitor.visit(func)
     ids = id_visitor.get_id_list()
@@ -2243,7 +2245,16 @@ def defectify_DRWV(ast, task_name, logger, exp_spec_dict):
     matched_id = random_pick_probless(matched_ids)
     target_id.name = matched_id
     logger.log_DRWV(target_node.coord)
-    return True
+    line_code_def = generator.visit(target_node).split("\n")[0]
+    annotation = {
+        "class": "DRWV",
+        "line_num": target_node.coord.line,
+        "line_code": line_code,
+        "line_code_def": line_code_def,
+        "var": temp,
+        "var_replacement": target_node.lvalue.name
+    }
+    return annotation
 
 
 def defectify_DCCA(ast, task_name, logger, exp_spec_dict):
@@ -2269,19 +2280,31 @@ def defectify_DCCA(ast, task_name, logger, exp_spec_dict):
         return False
     random_array_len_list = random_picker_spec["random_array_len_list"]
     target_array_decl = random_pick_probless(array_decls)
+    line_code = generator.visit(target_array_decl).split("\n")[0]
     extra = []
+    dim_value = 0
     if type(target_array_decl.dim) == c_ast.Constant:
         dim_value = int(target_array_decl.dim.value)
         extra.append(dim_value * 10)
         extra.append(dim_value + 1)
         if dim_value > 1:
             extra.append(dim_value - 1)
+    else:
+        return False
     target_array_decl.dim = c_ast.Constant(type='int',
                                            value=str(random_pick_probless(random_array_len_list + extra)),
                                            coord=target_array_decl.coord)
     logger.log_DCCA(target_array_decl.coord, "rand")
-
-    return True
+    line_code_def = generator.visit(target_array_decl).split("\n")[0]
+    annotation = {
+        "class": "DCCA",
+        "line_num": target_array_decl.coord.line,
+        "line_code": line_code,
+        "line_code_def": line_code_def,
+        "dimension": dim_value,
+        "dimension_replacement": target_array_decl.dim.value
+    }
+    return annotation
 
 
 def defectify_test(ast, task_name, logger, exp_spec_dict):

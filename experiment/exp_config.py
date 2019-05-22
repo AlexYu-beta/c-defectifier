@@ -525,6 +525,6 @@ def generate_experiment_config(task_name):
 
 
 if __name__ == '__main__':
-    task_name = "Test10_DRVA_DB"
-    conf = DRVA_DB
+    task_name = "Test12_DCCA_DB"
+    conf = DCCA_DB
     generate_experiment_config(task_name)

@@ -262,6 +262,6 @@ def test():
 
 
 if __name__ == '__main__':
-    task_name = "Test10_DRVA_DB"
+    task_name = "Test12_DCCA_DB"
     drive(task_name)
     # test()
