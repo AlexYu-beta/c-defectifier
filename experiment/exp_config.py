@@ -525,6 +525,6 @@ def generate_experiment_config(task_name):
 
 
 if __name__ == '__main__':
-    task_name = "Test06_STYP_DB"
-    conf = STYP_1_DB
+    task_name = "Test08_OFPO_DB"
+    conf = OFPO_1_DB
     generate_experiment_config(task_name)

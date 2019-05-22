@@ -1593,11 +1593,18 @@ def defectify_SMOV(ast, task_name, logger, exp_spec_dict):
     result = decls + body
     target_node.block_items = result
     logger.log_SMOV(target_stmts[index_1].coord, target_stmts[index_2].coord)
+    annotation = {
+        "class": "SMOV",
+        "line_num_1": body[index_2].coord.line,
+        "line_code_1": generator.visit(body[index_2]),
+        "line_num_2": body[index_1].coord.line,
+        "line_code_2": generator.visit(body[index_1])
+    }
     # retrieve ast
     # temp = target_stmts[index_1]
     # target_stmts[index_1] = target_stmts[index_2]
     # target_stmts[index_2] = temp
-    return True
+    return annotation
 
 
 def defectify_OFPO(ast, task_name, logger, exp_spec_dict):
@@ -1647,6 +1654,7 @@ def defectify_OFPO(ast, task_name, logger, exp_spec_dict):
         print("Warning: No available function calls can be found.")
         return False
     target_func_call = random_pick_probless(available_func_calls)
+    line_code = generator.visit(target_func_call).split("\n")[0]
     target_param_type_map = funcs_param_type_map[target_func_call.name.name]
     available_param_index = {key: value for key, value in target_param_type_map.items() if len(value) > 1}
     target_key = random_pick_probless(list(available_param_index.keys()))
@@ -1662,11 +1670,20 @@ def defectify_OFPO(ast, task_name, logger, exp_spec_dict):
     target_arg[index_1] = target_arg[index_2]
     target_arg[index_2] = temp
     logger.log_OFPO(target_func_call.coord, index_1, index_2)
+    line_code_def = generator.visit(target_func_call).split("\n")[0]
+    annotation = {
+        "class": "OFPO",
+        "line_num": target_func_call.coord.line,
+        "line_code": line_code,
+        "line_code_def": line_code_def,
+        "index_1": index_1,
+        "index_2": index_2
+    }
     # retrieve ast
     # temp = target_arg[index_1]
     # target_arg[index_1] = target_arg[index_2]
     # target_arg[index_2] = temp
-    return True
+    return annotation
 
 
 def defectify_DCCR_to_const(ast, task_name, logger, exp_spec_dict):
