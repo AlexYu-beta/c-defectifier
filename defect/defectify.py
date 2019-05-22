@@ -1300,6 +1300,7 @@ def defectify_OAIS_add_op(ast, task_name, logger, exp_spec_dict):
             id_type = id_name_map[temp.name]
         else:
             return False
+        line_code = generator.visit(target_node).split("\n")[0]
         if id_type in {"int", "short", "long"}:
             right_const = c_ast.Constant(type=id_type,
                                          value=str(random_picker.gen_random(id_type)))
@@ -1318,9 +1319,18 @@ def defectify_OAIS_add_op(ast, task_name, logger, exp_spec_dict):
                                               right=right_const,
                                               coord=temp.coord)
         logger.log_OAIS(target_node.coord, "add_op")
+        line_code_def = generator.visit(target_node).split("\n")[0]
+        annotation = {
+            "class": "OAIS_add_op",
+            "line_num": target_node.coord.line,
+            "line_code": line_code,
+            "line_code_def": line_code_def,
+            "op_add": target_node.left.op,
+            "right_value_add": target_node.left.right.value
+        }
         # retrieve ast
         # target_node.left = temp
-        return True
+        return annotation
 
     if type(target_node.right) == c_ast.ID:
         temp = target_node.right
@@ -1328,6 +1338,7 @@ def defectify_OAIS_add_op(ast, task_name, logger, exp_spec_dict):
             id_type = id_name_map[temp.name]
         else:
             return False
+        line_code = generator.visit(target_node).split("\n")[0]
         if id_type in {"int", "short", "long"}:
             right_const = c_ast.Constant(type=id_type,
                                          value=str(random_picker.gen_random(id_type)))
@@ -1346,9 +1357,18 @@ def defectify_OAIS_add_op(ast, task_name, logger, exp_spec_dict):
                                                right=right_const,
                                                coord=temp.coord)
         logger.log_OAIS(target_node.coord, "add_op")
+        line_code_def = generator.visit(target_node).split("\n")[0]
+        annotation = {
+            "class": "OAIS_add_op",
+            "line_num": target_node.coord.line,
+            "line_code": line_code,
+            "line_code_def": line_code_def,
+            "op_add": target_node.right.op,
+            "right_value_add": target_node.right.right.value
+        }
         # retrieve ast
         # target_node.right = temp
-        return True
+        return annotation
 
 
 def defectify_OAIS_del_op(ast, task_name, logger, exp_spec_dict):
@@ -1402,12 +1422,20 @@ def defectify_OAIS_del_op(ast, task_name, logger, exp_spec_dict):
         if dad is None:
             print("Orphan")
             return False
+        line_code = generator.visit(dad).split("\n")[0]
         for slot in dad.__slots__:
             if dad.__getattribute__(slot) == target_node:
                 setattr(dad, slot, target_node.left)
                 break
         logger.log_OAIS(target_node.coord, "del_op")
-        return True
+        line_code_def = generator.visit(dad).split("\n")[0]
+        annotation = {
+            "class": "OAIS_del_op",
+            "line_num": dad.coord.line,
+            "line_code": line_code,
+            "line_code_def": line_code_def
+        }
+        return annotation
     if type(target_node.right) == c_ast.ID:
         daddy_visitor = DaddyVisitor(ast, target_node)
         daddy_visitor.visit(ast)
@@ -1415,12 +1443,20 @@ def defectify_OAIS_del_op(ast, task_name, logger, exp_spec_dict):
         if dad is None:
             print("Orphan")
             return False
+        line_code = generator.visit(dad).split("\n")[0]
         for slot in dad.__slots__:
             if dad.__getattribute__(slot) == target_node:
                 setattr(dad, slot, target_node.left)
                 break
         logger.log_OAIS(target_node.coord, "del_op")
-        return True
+        line_code_def = generator.visit(dad).split("\n")[0]
+        annotation = {
+            "class": "OAIS_del_op",
+            "line_num": dad.coord.line,
+            "line_code": line_code,
+            "line_code_def": line_code_def
+        }
+        return annotation
 
 
 def defectify_OAIS(ast, task_name, logger, exp_spec_dict):
@@ -1487,12 +1523,22 @@ def defectify_STYP(ast, task_name, logger, exp_spec_dict):
     else:
         print("Err: Current Type cannot be replaced")
         return False
+    line_code = generator.visit(var_decl).split("\n")[0]
     temp = var_decl.type.type.names[0]
     var_decl.type.type = c_ast.IdentifierType(names=[replace_type])
     logger.log_STYP(var_decl.coord, temp, replace_type)
+    line_code_def = generator.visit(var_decl).split("\n")[0]
+    annotation = {
+        "class": "STYP",
+        "line_num": var_decl.coord.line,
+        "line_code": line_code,
+        "line_code_def": line_code_def,
+        "type": temp,
+        "type_replace": replace_type
+    }
     # retrieve ast
     # var_decl.type.type = c_ast.IdentifierType(names=[temp])
-    return True
+    return annotation
 
 
 def defectify_SMOV(ast, task_name, logger, exp_spec_dict):
