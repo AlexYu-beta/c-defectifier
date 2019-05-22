@@ -436,7 +436,7 @@ DCCR_DB = {
     "sift_option": "",
     "limit": -1,
     "defects": {
-        "DCCR": 1.0
+        "DCCR_to_var": 1.0
     },
     "repeat_min": 1,
     "repeat_max": 2,
@@ -525,6 +525,6 @@ def generate_experiment_config(task_name):
 
 
 if __name__ == '__main__':
-    task_name = "Test08_OFPO_DB"
-    conf = OFPO_1_DB
+    task_name = "Test10_DRVA_DB"
+    conf = DRVA_DB
     generate_experiment_config(task_name)

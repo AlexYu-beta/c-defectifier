@@ -1729,9 +1729,11 @@ def defectify_DCCR_to_const(ast, task_name, logger, exp_spec_dict):
         return False
 
     target_node = random_pick_probless(available_nodes)
+    line_code = generator.visit(target_node).split("\n")[0]
     replacement_offset = random_picker_spec["replacement_offset"]
 
     if type(target_node) == c_ast.UnaryOp:
+        temp = target_node.expr
         const_type = target_node.expr.type
         const_value = target_node.expr.value
         const_value = re.sub("[^0-9]", "", const_value)
@@ -1761,8 +1763,18 @@ def defectify_DCCR_to_const(ast, task_name, logger, exp_spec_dict):
         else:
             print("Other type not supported.")
             return False
+        line_code_def = generator.visit(target_node).split("\n")[0]
+        annotation = {
+            "class": "DCCR_to_const",
+            "line_num": target_node.coord.line,
+            "line_code": line_code,
+            "line_code_def": line_code_def,
+            "const": temp.value,
+            "const_replacement": new_const.value
+        }
     elif type(target_node) == c_ast.BinaryOp:
         if type(target_node.left) == c_ast.Constant:
+            temp = target_node.left
             const_type = target_node.left.type
             const_value = target_node.left.value
             const_value = re.sub("[^0-9]", "", const_value)
@@ -1793,6 +1805,7 @@ def defectify_DCCR_to_const(ast, task_name, logger, exp_spec_dict):
                 print("Other type not supported.")
                 return False
         else:
+            temp = target_node.right
             const_type = target_node.right.type
             const_value = target_node.right.value
             const_value = re.sub("[^0-9]", "", const_value)
@@ -1822,11 +1835,20 @@ def defectify_DCCR_to_const(ast, task_name, logger, exp_spec_dict):
             else:
                 print("Other type not supported.")
                 return False
+        line_code_def = generator.visit(target_node).split("\n")[0]
+        annotation = {
+            "class": "DCCR_to_const",
+            "line_num": target_node.coord.line,
+            "line_code": line_code,
+            "line_code_def": line_code_def,
+            "const": temp.value,
+            "const_replacement": new_const.value
+        }
     else:
         print("Strange Type")
         print(type(target_node))
         return False
-    return True
+    return annotation
 
 
 def defectify_DCCR_to_var(ast, task_name, logger, exp_spec_dict):
@@ -1892,27 +1914,58 @@ def defectify_DCCR_to_var(ast, task_name, logger, exp_spec_dict):
         return False
 
     target_node = random_pick_probless(available_nodes)
+    line_code = generator.visit(target_node).split("\n")[0]
     replace_var = random_pick_probless(available_decls)
     if replace_var is None:
         print("No replacement found.")
         return False
     if type(target_node) == c_ast.UnaryOp:
+        temp = target_node.expr.value
         target_node.expr = c_ast.ID(name=replace_var.declname,
                                     coord=target_node.expr.coord)
         logger.log_DCCR(target_node.expr.coord, "to_var")
+        line_code_def = generator.visit(target_node).split("\n")[0]
+        annotation = {
+            "class": "DCCR_to_var",
+            "line_num": target_node.coord.line,
+            "line_code": line_code,
+            "line_code_def": line_code_def,
+            "const": temp,
+            "const_replacement": replace_var.declname
+        }
     elif type(target_node) == c_ast.BinaryOp:
         if type(target_node.left) == c_ast.Constant:
+            temp = target_node.left.value
             target_node.left = c_ast.ID(name=replace_var.declname,
                                         coord=target_node.left.coord)
             logger.log_DCCR(target_node.left.coord, "to_var")
+            line_code_def = generator.visit(target_node).split("\n")[0]
+            annotation = {
+                "class": "DCCR_to_var",
+                "line_num": target_node.coord.line,
+                "line_code": line_code,
+                "line_code_def": line_code_def,
+                "const": temp,
+                "const_replacement": replace_var.declname
+            }
         else:
+            temp = target_node.right.value
             target_node.right = c_ast.ID(name=replace_var.declname,
                                          coord=target_node.right.coord)
             logger.log_DCCR(target_node.right.coord, "to_var")
+            line_code_def = generator.visit(target_node).split("\n")[0]
+            annotation = {
+                "class": "DCCR_to_var",
+                "line_num": target_node.coord.line,
+                "line_code": line_code,
+                "line_code_def": line_code_def,
+                "const": temp,
+                "const_replacement": replace_var.declname
+            }
     else:
         print("strange")
         return False
-    return True
+    return annotation
 
 
 def defectify_DCCR(ast, task_name, logger, exp_spec_dict):
@@ -1975,6 +2028,7 @@ def defectify_DRVA_to_const(ast, task_name, logger, exp_spec_dict):
         print("No available node can be found.")
         return False
     target_node = random_pick_probless(available_nodes)
+    line_code = generator.visit(target_node).split("\n")[0]
     target_id = target_node.rvalue
     type_decl_visitor = TypeDeclVisitor(func)
     type_decl_visitor.visit(func)
@@ -1986,11 +2040,21 @@ def defectify_DRVA_to_const(ast, task_name, logger, exp_spec_dict):
         target_id_type = id_name_map[target_id.name]
     else:
         return False
+    temp = target_node.rvalue.name
     target_node.rvalue = c_ast.Constant(type=target_id_type,
                                         value=random_picker.gen_random(target_id_type),
                                         coord=target_node.rvalue.coord)
     logger.log_DRVA(target_node.coord, "to_const")
-    return True
+    line_code_def = generator.visit(target_node).split("\n")[0]
+    annotation = {
+        "class": "DRVA_to_const",
+        "line_num": target_node.coord.line,
+        "line_code": line_code,
+        "line_code_def": line_code_def,
+        "var": temp,
+        "var_replacement": target_node.rvalue.value
+    }
+    return annotation
 
 
 def defectify_DRVA_to_var(ast, task_name, logger, exp_spec_dict):
@@ -2031,7 +2095,9 @@ def defectify_DRVA_to_var(ast, task_name, logger, exp_spec_dict):
         print("No available node can be found.")
         return False
     target_node = random_pick_probless(available_nodes)
+    line_code = generator.visit(target_node).split("\n")[0]
     target_id = target_node.rvalue
+    temp = target_id.name
     id_visitor = IDVisitor(func)
     id_visitor.visit(func)
     ids = id_visitor.get_id_list()
@@ -2068,7 +2134,16 @@ def defectify_DRVA_to_var(ast, task_name, logger, exp_spec_dict):
     matched_id = random_pick_probless(matched_ids)
     target_id.name = matched_id
     logger.log_DRVA(target_node.coord, "to_var")
-    return True
+    line_code_def = generator.visit(target_node).split("\n")[0]
+    annotation = {
+        "class": "DRVA_to_var",
+        "line_num": target_node.coord.line,
+        "line_code": line_code,
+        "line_code_def": line_code_def,
+        "var": temp,
+        "var_replacement": target_node.rvalue.name
+    }
+    return annotation
 
 
 def defectify_DRVA(ast, task_name, logger, exp_spec_dict):
