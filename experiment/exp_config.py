@@ -181,7 +181,7 @@ SRIF_1 = {
 }
 
 SRIF_1_DB = {
-    "task_name": "Test03_SRIF",
+    "task_name": "Test03_SRIF_DB",
     "src_dir": "/home/alex/PycharmProjects/c-defectifier/dataset/c_data_ok.db",
     "src_type": "db",
     "sift_option": "",
@@ -204,7 +204,7 @@ SDFN_1 = {
     "src_dir": "/home/alex/PycharmProjects/c-defectifier/exp_src/Test04_SDFN",
     "src_type": "files",
     "sift_option": "",
-    "limit": 1,
+    "limit": -1,
     "defects": {
         "SDFN": 1.0
     },
@@ -525,6 +525,6 @@ def generate_experiment_config(task_name):
 
 
 if __name__ == '__main__':
-    task_name = "Test02_OILN_DB"
-    conf = OILN_1_DB
+    task_name = "Test04_SDFN_DB"
+    conf = SDFN_1_DB
     generate_experiment_config(task_name)

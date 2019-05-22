@@ -592,8 +592,6 @@ def defectify_SRIF_replace_var(ast, task_name, logger, exp_spec_dict):
         print("Warning: no replacement found.")
         return False
     target_id = random_pick_probless(ids)
-    print("target_id: ")
-    print(target_id)
     if target_id is None:
         print("No Target ID Found")
         return False
@@ -619,14 +617,24 @@ def defectify_SRIF_replace_var(ast, task_name, logger, exp_spec_dict):
     if len(matched_ids) == 0:
         print("Warning: no replacement found.")
         return False
+    line_code = generator.visit(node).split("\n")[0]
     # 4. randomly pick one matched identifier
     matched_id = random_pick_probless(matched_ids)
     temp = target_id.name
     target_id.name = matched_id
     logger.log_SRIF(node.coord, "replace var")
+    line_code_def = generator.visit(node).split("\n")[0]
+    annotation = {
+        "class": "SRIF_replace_var",
+        "line_num": node.coord.line,
+        "line_code": line_code,
+        "line_code_def": line_code_def,
+        "var": temp,
+        "replace_var": target_id.name
+    }
     # retrieve ast
     # target_id.name = temp
-    return True
+    return annotation
 
 
 def defectify_SRIF_to_expr(ast, task_name, logger, exp_spec_dict):
@@ -714,7 +722,7 @@ def defectify_SRIF_to_expr(ast, task_name, logger, exp_spec_dict):
     if target_id_type == "char":
         print("Warning: cannot convert to expression.")
         return False
-
+    line_code = generator.visit(node).split("\n")[0]
     # 4. search binary op from root
     binary_op_visitor = BinaryOpVisitor(node.cond)
     binary_op_visitor.visit(node.cond)
@@ -726,6 +734,7 @@ def defectify_SRIF_to_expr(ast, task_name, logger, exp_spec_dict):
     value = random_picker.gen_random(target_id_type)
     value_const = c_ast.Constant(type=target_id_type,
                                  value=str(value))
+    annotation = False
     for binary_op in binary_ops:
         if binary_op.left == target_id:
             temp = target_id
@@ -737,6 +746,15 @@ def defectify_SRIF_to_expr(ast, task_name, logger, exp_spec_dict):
                 logger.log_SRIF(target_id.coord, "to expr")
             else:
                 logger.log_SRIF(node.coord, "to expr")
+            line_code_def = generator.visit(node).split("\n")[0]
+            annotation = {
+                "class": "SRIF_to_expr",
+                "line_num": node.coord.line,
+                "line_code": line_code,
+                "line_code_def": line_code_def,
+                "var": temp.name,
+                "replace_expression": generator.visit(binary_op.left)
+            }
             # retrieve ast
             # binary_op.left = temp
             break
@@ -750,10 +768,20 @@ def defectify_SRIF_to_expr(ast, task_name, logger, exp_spec_dict):
                 logger.log_SRIF(target_id.coord, "to expr")
             else:
                 logger.log_SRIF(node.coord, "to expr")
+            line_code_def = generator.visit(node).split("\n")[0]
+            annotation = {
+                "class": "SRIF_to_expr",
+                "line_num": node.coord.line,
+                "line_code": line_code,
+                "line_code_def": line_code_def,
+                "var": temp.name,
+                "replace_expression": generator.visit(binary_op.right)
+            }
             # retrieve ast
             # binary_op.right = temp
             break
-    return True
+
+    return annotation
 
 
 def defectify_SRIF_wrap_func_call(ast, task_name, logger, exp_spec_dict):
@@ -900,12 +928,22 @@ def defectify_SRIF_wrap_func_call(ast, task_name, logger, exp_spec_dict):
     func_call = c_ast.FuncCall(name=func_call_id,
                                args=c_ast.ExprList(exprs=func_call_args),
                                coord=target_id.coord)
-    # print(generator.visit(func_call))
+    line_code = generator.visit(node).split("\n")[0]
+    annotation = False
     for binary_op in binary_ops:
         if binary_op.left == target_id:
             temp = target_id
             binary_op.left = func_call
             logger.log_SRIF(target_id.coord, "wrap func")
+            line_code_def = generator.visit(node).split("\n")[0]
+            annotation = {
+                "class": "SRIF_wrap_func_call",
+                "line_num": node.coord.line,
+                "line_code": line_code,
+                "line_code_def": line_code_def,
+                "var": temp.name,
+                "replace_func_call": generator.visit(binary_op.left)
+            }
             # retrieve ast
             # binary_op.left = temp
             break
@@ -913,10 +951,19 @@ def defectify_SRIF_wrap_func_call(ast, task_name, logger, exp_spec_dict):
             temp = target_id
             binary_op.right = func_call
             logger.log_SRIF(target_id.coord, "wrap func")
+            line_code_def = generator.visit(node).split("\n")[0]
+            annotation = {
+                "class": "SRIF_wrap_func_call",
+                "line_num": node.coord.line,
+                "line_code": line_code,
+                "line_code_def": line_code_def,
+                "var": temp.name,
+                "replace_func_call": generator.visit(binary_op.right)
+            }
             # retrieve ast
             # binary_op.right = temp
             break
-    return True
+    return annotation
 
 
 def defectify_SRIF_unwrap_func_call(ast, task_name, logger, exp_spec_dict):
@@ -1061,6 +1108,8 @@ def defectify_SRIF_unwrap_func_call(ast, task_name, logger, exp_spec_dict):
             # print("Warning: No unwrappable function call found.")
             return False
         else:
+            line_code = generator.visit(node).split("\n")[0]
+            annotation = False
             binary_op_visitor = BinaryOpVisitor(node.cond)
             binary_op_visitor.visit(node.cond)
             binary_ops = binary_op_visitor.get_nodelist()
@@ -1073,9 +1122,18 @@ def defectify_SRIF_unwrap_func_call(ast, task_name, logger, exp_spec_dict):
                         logger.log_SRIF(target_id.coord, "unwrap func")
                     else:
                         logger.log_SRIF(node.coord, "unwrap func")
+                    line_code_def = generator.visit(node).split("\n")[0]
+                    annotation = {
+                        "class": "SRIF_unwrap_func_call",
+                        "line_num": node.coord.line,
+                        "line_code": line_code,
+                        "line_code_def": line_code_def,
+                        "func_call_to_unwrap": generator.visit(temp),
+                        "replacement": generator.visit(binary_op.left)
+                    }
                     # retrieve ast
                     # binary_op.left = temp
-                    return True
+                    break
                 elif binary_op.right == unwrappable_func_call:
                     temp = binary_op.right
                     binary_op.right = c_ast.ID(name=target_id.name,
@@ -1084,10 +1142,19 @@ def defectify_SRIF_unwrap_func_call(ast, task_name, logger, exp_spec_dict):
                         logger.log_SRIF(target_id.coord, "unwrap func")
                     else:
                         logger.log_SRIF(node.coord, "unwrap func")
+                    line_code_def = generator.visit(node).split("\n")[0]
+                    annotation = {
+                        "class": "SRIF_unwrap_func_call",
+                        "line_num": node.coord.line,
+                        "line_code": line_code,
+                        "line_code_def": line_code_def,
+                        "func_call_to_unwrap": generator.visit(temp),
+                        "replacement": generator.visit(binary_op.right)
+                    }
                     # retrieve ast
                     # binary_op.right = temp
-                    return True
-            return False
+                    break
+            return annotation
 
 
 def defectify_SRIF(ast, task_name, logger, exp_spec_dict):
@@ -1150,10 +1217,17 @@ def defectify_SDFN(ast, task_name, logger, exp_spec_dict):
         print("Warning: No function call can be deleted.")
         return False
     target_node = random_pick_probless(available_nodes)
+    annotation = False
     if hasattr(target_node, "stmt"):
+        line_code = generator.visit(target_node).split("\n")[1]
         func_call = target_node.stmt
         target_node.stmt = c_ast.EmptyStatement(coord=func_call.coord)
         logger.log_SDFN(func_call.coord, "delete function call from statement")
+        annotation = {
+            "class": "SDFN",
+            "line_num": target_node.coord.line,
+            "line_code": line_code
+        }
         # retrieve ast
         # target_node.stmt = func_call
     else:
@@ -1162,12 +1236,18 @@ def defectify_SDFN(ast, task_name, logger, exp_spec_dict):
             if type(stmt) == c_ast.FuncCall:
                 func_calls.append(stmt)
         func_call = random_pick_probless(func_calls)
-        # index = target_node.stmts.index(func_call)
+        index = target_node.stmts.index(func_call)
+        line_code = generator.visit(target_node).split("\n")[index+1]
         target_node.stmts.remove(func_call)
         logger.log_SDFN(func_call.coord, "delete function call from statements")
+        annotation = {
+            "class": "SDFN",
+            "line_num": target_node.coord.line,
+            "line_code": line_code
+        }
         # retrieve ast
         # target_node.block_items.insert(index, func_call)
-    return True
+    return annotation
 
 
 def defectify_OAIS_add_op(ast, task_name, logger, exp_spec_dict):
