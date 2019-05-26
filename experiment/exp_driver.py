@@ -5,7 +5,7 @@ import json
 
 from utils.fs_util import init_experiment_fs, generate_exp_output, config_dict, generate_exp_output_db
 from utils.db_util import DBConnection
-from utils.code_util import parse_header_body
+from utils.code_util import parse_header_body, code_diff
 from utils.sqls import *
 from utils.random_picker import random_pick, get_randint
 from pycparser import c_parser, c_generator
@@ -60,7 +60,9 @@ def drive(task_name):
         logger.write_log()
     elif src_type == "db":
         db_origin_path = config_dict["dataset_path"] + "/" + "c_data_ok.db"
-        db_target_path = config_dict["exp_output_path"] + "/" + task_name + "/" + task_name+ ".db"
+        db_target_path = config_dict["exp_output_path"] + "/" + task_name + "/" + task_name + ".db"
+        left_file = config_dict["exp_output_path"] + "/" + task_name + "/left"
+        right_file = config_dict["exp_output_path"] + "/" + task_name + "/right"
         db_origin = DBConnection(db_origin_path)
         db_target = DBConnection(db_target_path)
         # drop table
@@ -105,6 +107,9 @@ def drive(task_name):
             success = False
             success_times = 0
             annotations = {}
+            line_nums = []
+            code_before = code
+            code_after = None
             for i in range(get_randint(repeat_min, repeat_max)):
                 success = False
                 tries = 0
@@ -113,21 +118,33 @@ def drive(task_name):
                     if tries > 10:
                         break
                     defect = random_pick(defects, prob)
-                    success = defectify(ast, task_name, defect, logger, exp_spec_dict)
+                    success = defectify(ast, task_name, defect, logger, exp_spec_dict, line_nums)
                 if success:
-                    success_times += 1
                     success["line_num"] += len(headers.split("\n")) - sharp_defines
-                    annotations[str(success_times)] = success
+                    # perform annotation check
+                    line_num_checked = str(success["line_num"])
+                    code_after = generate_exp_output_db(ast, headers)
+                    success["line_code"] = code_before.split("\n")[success["line_num"] - 1]
+                    success["line_code_def"] = code_after.split("\n")[success["line_num"] - 1]
+                    code_diff_info = code_diff(code_before, code_after)
+                    if code_diff_info.startswith(line_num_checked, 2, len(code_diff_info)):
+                        success_times += 1
+                        annotations[str(success_times)] = success
+                        line_nums.append(int(line_num_checked))
+                        code_before = code_after
+                    else:
+                        continue
+
             if success_times == 0:
                 logger.log_nothing()
             else:
                 count += 1
                 gen_code = generate_exp_output_db(ast, headers)
-                for j in range(1, success_times + 1):
-                    annotation = annotations[str(j)]
-                    annotation["line_code"] = code.split("\n")[annotation["line_num"] - 1]
-                    annotation["line_code_def"] = gen_code.split("\n")[annotation["line_num"] - 1]
-                # print(gen_code)
+                # for j in range(1, success_times + 1):
+                #     annotation = annotations[str(j)]
+                #     annotation["line_code"] = code.split("\n")[annotation["line_num"] - 1]
+                #     annotation["line_code_def"] = gen_code.split("\n")[annotation["line_num"] - 1]
+                # # print(gen_code)
                 db_target.execute(INSERT_DEFECTIFY, (count, problem_id, submit_id, code, gen_code, json.dumps(annotations), "UNCHECKED"))
         logger.write_log()
     else:

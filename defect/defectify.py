@@ -22,7 +22,7 @@ c_arithmetic_binary_operator_set = {'+', '-', '*', '/', '%'}
 generator = c_generator.CGenerator()
 
 
-def defectify_ORRN(ast, task_name, logger, exp_spec_dict):
+def defectify_ORRN(ast, task_name, logger, exp_spec_dict, line_nums):
     """
     {
         available_nodes <- visit_nodes_with_condition(root)
@@ -35,6 +35,7 @@ def defectify_ORRN(ast, task_name, logger, exp_spec_dict):
     :param task_name:
     :param logger:
     :param exp_spec_dict:
+    :param line_nums:
     :return:
     """
     # print("previous")
@@ -50,6 +51,8 @@ def defectify_ORRN(ast, task_name, logger, exp_spec_dict):
     # 2. randomly pick a node
     node = random_pick_probless(available_node_list)
     line_num = node.cond.coord.line
+    if line_num in line_nums:
+        return False
     current_op = node.cond.op
     replace_ops = c_relational_binary_operator_set - {current_op}
     # 3. randomly pick a replacement
@@ -73,7 +76,7 @@ def defectify_ORRN(ast, task_name, logger, exp_spec_dict):
     return annotation
 
 
-def defectify_OILN_add_and(ast, task_name, logger, exp_spec_dict):
+def defectify_OILN_add_and(ast, task_name, logger, exp_spec_dict, line_nums):
     """
     {
         func <- random_pick(global_functions)
@@ -97,6 +100,7 @@ def defectify_OILN_add_and(ast, task_name, logger, exp_spec_dict):
     :param task_name:
     :param logger:
     :param exp_spec_dict:
+    :param line_nums:
     :return:
     """
     if "random_picker" in exp_spec_dict.keys():
@@ -119,6 +123,8 @@ def defectify_OILN_add_and(ast, task_name, logger, exp_spec_dict):
         return False
     # 2. randomly pick one if node from current function scope
     node = random_pick_probless(nodes)
+    if node.coord.line in line_nums:
+        return False
     if node.cond is None:
         print("No condition can be found")
         return False
@@ -192,7 +198,7 @@ def defectify_OILN_add_and(ast, task_name, logger, exp_spec_dict):
     return annotation
 
 
-def defectify_OILN_add_or(ast, task_name, logger, exp_spec_dict):
+def defectify_OILN_add_or(ast, task_name, logger, exp_spec_dict, line_nums):
     """
     {
         func <- random_pick(global_functions)
@@ -216,6 +222,7 @@ def defectify_OILN_add_or(ast, task_name, logger, exp_spec_dict):
     :param task_name:
     :param logger:
     :param exp_spec_dict:
+    :param line_nums:
     :return:
     """
     if "random_picker" in exp_spec_dict.keys():
@@ -238,6 +245,8 @@ def defectify_OILN_add_or(ast, task_name, logger, exp_spec_dict):
         return False
     # 2. randomly pick one if node from current function scope
     node = random_pick_probless(nodes)
+    if node.coord.line in line_nums:
+        return False
     if node.cond is None:
         print("No condition can be found")
         return False
@@ -311,7 +320,7 @@ def defectify_OILN_add_or(ast, task_name, logger, exp_spec_dict):
     return annotation
 
 
-def defectify_OILN_del_and(ast, task_name, logger, exp_spec_dict):
+def defectify_OILN_del_and(ast, task_name, logger, exp_spec_dict, line_nums):
     """
     {
         func <- random_pick(global_functions)
@@ -327,6 +336,7 @@ def defectify_OILN_del_and(ast, task_name, logger, exp_spec_dict):
     :param task_name:
     :param logger:
     :param exp_spec_dict:
+    :param line_nums:
     :return:
     """
     global_ids, global_funcs = parse_fileAST_exts(ast)
@@ -356,6 +366,8 @@ def defectify_OILN_del_and(ast, task_name, logger, exp_spec_dict):
     # 3. save previous conditions
     temp = node.cond
     line_num = node.cond.coord.line
+    if line_num in line_nums:
+        return False
     del_left = random_pick_probless([True, False])
     try:
         if del_left:
@@ -381,7 +393,7 @@ def defectify_OILN_del_and(ast, task_name, logger, exp_spec_dict):
     return annotation
 
 
-def defectify_OILN_del_or(ast, task_name, logger, exp_spec_dict):
+def defectify_OILN_del_or(ast, task_name, logger, exp_spec_dict, line_nums):
     """
     {
         func <- random_pick(global_functions)
@@ -397,6 +409,7 @@ def defectify_OILN_del_or(ast, task_name, logger, exp_spec_dict):
     :param task_name:
     :param logger:
     :param exp_spec_dict:
+    :param line_nums:
     :return:
     """
     global_ids, global_funcs = parse_fileAST_exts(ast)
@@ -426,6 +439,8 @@ def defectify_OILN_del_or(ast, task_name, logger, exp_spec_dict):
     # 3. save previous conditions
     temp = node.cond
     line_num = node.cond.coord.line
+    if line_num in line_nums:
+        return False
     del_left = random_pick_probless([True, False])
     try:
         if del_left:
@@ -451,7 +466,7 @@ def defectify_OILN_del_or(ast, task_name, logger, exp_spec_dict):
     return annotation
 
 
-def defectify_OILN_negate_cond(ast, task_name, logger, exp_spec_dict):
+def defectify_OILN_negate_cond(ast, task_name, logger, exp_spec_dict, line_nums):
     """
     {
         func <- random_pick(global_functions)
@@ -466,6 +481,7 @@ def defectify_OILN_negate_cond(ast, task_name, logger, exp_spec_dict):
     :param task_name:
     :param logger:
     :param exp_spec_dict:
+    :param line_nums:
     :return:
     """
     global_ids, global_funcs = parse_fileAST_exts(ast)
@@ -484,6 +500,8 @@ def defectify_OILN_negate_cond(ast, task_name, logger, exp_spec_dict):
     node = random_pick_probless(nodes)
     if node.cond is None:
         print("No condition can be found")
+        return False
+    if node.cond.coord.line in line_nums:
         return False
     if type(node.cond) != c_ast.BinaryOp:
         print("Warning: no binary operation can be found, no || can be deleted.")
@@ -522,11 +540,13 @@ def defectify_OILN_negate_cond(ast, task_name, logger, exp_spec_dict):
     return annotation
 
 
-def defectify_OILN(ast, task_name, logger, exp_spec_dict):
+def defectify_OILN(ast, task_name, logger, exp_spec_dict, line_nums):
     """
     :param ast:
     :param task_name:
-    :param logger
+    :param logger:
+    :param exp_spec_dict:
+    :param line_nums:
     :return:
     """
     OILN_EQUAL_PROB = True
@@ -542,10 +562,10 @@ def defectify_OILN(ast, task_name, logger, exp_spec_dict):
                                                "defectify_OILN_negate_cond"])]
     else:
         func = globals()["defectify_" + random_pick(list(oiln_spec.keys()), list(oiln_spec.values()))]
-    return func(ast, task_name, logger, exp_spec_dict)
+    return func(ast, task_name, logger, exp_spec_dict, line_nums)
 
 
-def defectify_SRIF_replace_var(ast, task_name, logger, exp_spec_dict):
+def defectify_SRIF_replace_var(ast, task_name, logger, exp_spec_dict, line_nums):
     """
     {
         func <- random_pick(global_functions)
@@ -562,6 +582,7 @@ def defectify_SRIF_replace_var(ast, task_name, logger, exp_spec_dict):
     :param task_name:
     :param logger:
     :param exp_spec_dict:
+    :param line_nums:
     :return:
     """
     global_ids, global_funcs = parse_fileAST_exts(ast)
@@ -586,6 +607,8 @@ def defectify_SRIF_replace_var(ast, task_name, logger, exp_spec_dict):
     node = random_pick_probless(nodes)
     if node.cond is None:
         print("No node condition can be found")
+        return False
+    if node.coord.line in line_nums:
         return False
     id_visitor = IDVisitor(node.cond)
     id_visitor.visit(node.cond)
@@ -644,7 +667,7 @@ def defectify_SRIF_replace_var(ast, task_name, logger, exp_spec_dict):
     return annotation
 
 
-def defectify_SRIF_to_expr(ast, task_name, logger, exp_spec_dict):
+def defectify_SRIF_to_expr(ast, task_name, logger, exp_spec_dict, line_nums):
     """
     {
         func <- random_pick(global_functions)
@@ -670,6 +693,7 @@ def defectify_SRIF_to_expr(ast, task_name, logger, exp_spec_dict):
     :param task_name:
     :param logger:
     :param exp_spec_dict:
+    :param line_nums:
     :return:
     """
     if "random_picker" in exp_spec_dict.keys():
@@ -700,6 +724,8 @@ def defectify_SRIF_to_expr(ast, task_name, logger, exp_spec_dict):
     node = random_pick_probless(nodes)
     if node.cond is None:
         print("No node condition can be found")
+        return False
+    if node.coord.line in line_nums:
         return False
     id_visitor = IDVisitor(node.cond)
     id_visitor.visit(node.cond)
@@ -791,7 +817,7 @@ def defectify_SRIF_to_expr(ast, task_name, logger, exp_spec_dict):
     return annotation
 
 
-def defectify_SRIF_wrap_func_call(ast, task_name, logger, exp_spec_dict):
+def defectify_SRIF_wrap_func_call(ast, task_name, logger, exp_spec_dict, line_nums):
     """
     {
         func <- random_pick(global_functions)
@@ -822,6 +848,7 @@ def defectify_SRIF_wrap_func_call(ast, task_name, logger, exp_spec_dict):
     :param task_name:
     :param logger:
     :param exp_spec_dict:
+    :param line_nums:
     :return:
     """
     if "random_picker" in exp_spec_dict.keys():
@@ -855,6 +882,8 @@ def defectify_SRIF_wrap_func_call(ast, task_name, logger, exp_spec_dict):
     node = random_pick_probless(nodes)
     if node.cond is None:
         print("No node condition can be found")
+        return False
+    if node.coord.line in line_nums:
         return False
     id_visitor = IDVisitor(node.cond)
     id_visitor.visit(node.cond)
@@ -973,7 +1002,7 @@ def defectify_SRIF_wrap_func_call(ast, task_name, logger, exp_spec_dict):
     return annotation
 
 
-def defectify_SRIF_unwrap_func_call(ast, task_name, logger, exp_spec_dict):
+def defectify_SRIF_unwrap_func_call(ast, task_name, logger, exp_spec_dict, line_nums):
     """
     {
         func <- random_pick(global_functions)
@@ -1002,6 +1031,7 @@ def defectify_SRIF_unwrap_func_call(ast, task_name, logger, exp_spec_dict):
     :param task_name:
     :param logger:
     :param exp_spec_dict:
+    :param line_nums:
     :return:
     """
     # begin SRIF
@@ -1035,6 +1065,8 @@ def defectify_SRIF_unwrap_func_call(ast, task_name, logger, exp_spec_dict):
         return False
     if node.cond is None:
         print("No condition node can be found")
+        return False
+    if node.coord.line in line_nums:
         return False
     id_visitor = IDVisitor(node.cond)
     id_visitor.visit(node.cond)
@@ -1164,13 +1196,14 @@ def defectify_SRIF_unwrap_func_call(ast, task_name, logger, exp_spec_dict):
             return annotation
 
 
-def defectify_SRIF(ast, task_name, logger, exp_spec_dict):
+def defectify_SRIF(ast, task_name, logger, exp_spec_dict, line_nums):
     """
 
     :param ast:
     :param task_name:
     :param logger:
     :param exp_spec_dict:
+    :param line_nums:
     :return:
     """
     SRIF_EQUAL_PROB = True
@@ -1185,10 +1218,10 @@ def defectify_SRIF(ast, task_name, logger, exp_spec_dict):
                                                "defectify_SRIF_unwrap_func_call"])]
     else:
         func = globals()["defectify_" + random_pick(list(srif_spec.keys()), list(srif_spec.values()))]
-    return func(ast, task_name, logger, exp_spec_dict)
+    return func(ast, task_name, logger, exp_spec_dict, line_nums)
 
 
-def defectify_SDFN(ast, task_name, logger, exp_spec_dict):
+def defectify_SDFN(ast, task_name, logger, exp_spec_dict, line_nums):
     """
     {
         statement_nodes <- visit_statements(root)
@@ -1203,6 +1236,7 @@ def defectify_SDFN(ast, task_name, logger, exp_spec_dict):
     :param task_name:
     :param logger:
     :param exp_spec_dict:
+    :param line_nums:
     :return:
     """
     statement_visitor = StatementVisitor(ast)
@@ -1227,6 +1261,8 @@ def defectify_SDFN(ast, task_name, logger, exp_spec_dict):
     annotation = False
     if hasattr(target_node, "stmt"):
         line_num = target_node.stmt.coord.line
+        if line_num in line_nums:
+            return False
         line_code = generator.visit(target_node.stmt).split("\n")[0]
         func_call = target_node.stmt
         target_node.stmt = c_ast.EmptyStatement(coord=func_call.coord)
@@ -1246,6 +1282,8 @@ def defectify_SDFN(ast, task_name, logger, exp_spec_dict):
         func_call = random_pick_probless(func_calls)
         index = target_node.stmts.index(func_call)
         line_num = func_call.coord.line
+        if line_num in line_nums:
+            return False
         line_code = generator.visit(target_node).split("\n")[index+1]
         target_node.stmts.remove(func_call)
         logger.log_SDFN(func_call.coord, "delete function call from statements")
@@ -1259,13 +1297,14 @@ def defectify_SDFN(ast, task_name, logger, exp_spec_dict):
     return annotation
 
 
-def defectify_OAIS_add_op(ast, task_name, logger, exp_spec_dict):
+def defectify_OAIS_add_op(ast, task_name, logger, exp_spec_dict, line_nums):
     """
 
     :param ast:
     :param task_name:
     :param logger:
     :param exp_spec_dict:
+    :param line_nums:
     :return:
     """
     if "random_picker" in exp_spec_dict.keys():
@@ -1303,6 +1342,8 @@ def defectify_OAIS_add_op(ast, task_name, logger, exp_spec_dict):
         print("no available nodes")
         return False
     target_node = random_pick_probless(available_nodes)
+    if target_node.coord.line in line_nums:
+        return False
     if type(target_node.left) == c_ast.ID:
         temp = target_node.left
         if temp.name in id_name_map.keys():
@@ -1380,13 +1421,14 @@ def defectify_OAIS_add_op(ast, task_name, logger, exp_spec_dict):
         return annotation
 
 
-def defectify_OAIS_del_op(ast, task_name, logger, exp_spec_dict):
+def defectify_OAIS_del_op(ast, task_name, logger, exp_spec_dict, line_nums):
     """
 
     :param ast:
     :param task_name:
     :param logger:
     :param exp_spec_dict:
+    :param line_nums:
     :return:
     """
     if "random_picker" in exp_spec_dict.keys():
@@ -1431,6 +1473,8 @@ def defectify_OAIS_del_op(ast, task_name, logger, exp_spec_dict):
         if dad is None:
             print("Orphan")
             return False
+        if dad.coord.line in line_nums:
+            return False
         line_code = generator.visit(dad).split("\n")[0]
         for slot in dad.__slots__:
             if dad.__getattribute__(slot) == target_node:
@@ -1452,6 +1496,8 @@ def defectify_OAIS_del_op(ast, task_name, logger, exp_spec_dict):
         if dad is None:
             print("Orphan")
             return False
+        if dad.coord.line in line_nums:
+            return False
         line_code = generator.visit(dad).split("\n")[0]
         for slot in dad.__slots__:
             if dad.__getattribute__(slot) == target_node:
@@ -1468,7 +1514,7 @@ def defectify_OAIS_del_op(ast, task_name, logger, exp_spec_dict):
         return annotation
 
 
-def defectify_OAIS(ast, task_name, logger, exp_spec_dict):
+def defectify_OAIS(ast, task_name, logger, exp_spec_dict, line_nums):
     """
     OAIS is just like to_expr in SRIF, but different in sequence-flow
     {
@@ -1489,16 +1535,17 @@ def defectify_OAIS(ast, task_name, logger, exp_spec_dict):
                                                "defectify_OAIS_del_op"])]
     else:
         func = globals()["defectify_" + random_pick(list(oais_spec.keys()), list(oais_spec.values()))]
-    return func(ast, task_name, logger, exp_spec_dict)
+    return func(ast, task_name, logger, exp_spec_dict, line_nums)
 
 
-def defectify_STYP(ast, task_name, logger, exp_spec_dict):
+def defectify_STYP(ast, task_name, logger, exp_spec_dict, line_nums):
     """
 
     :param ast:
     :param task_name:
     :param logger:
     :param exp_spec_dict:
+    :param line_nums:
     :return:
     """
     global_ids, global_funcs = parse_fileAST_exts(ast)
@@ -1511,6 +1558,8 @@ def defectify_STYP(ast, task_name, logger, exp_spec_dict):
     char_family = ["char"]
     float_family = ["float", "double"]
     var_decl = random_pick_probless(var_decls)
+    if var_decl.coord.line in line_nums:
+        return False
     if var_decl is None:
         print("No variant declaration.")
         return False
@@ -1550,13 +1599,14 @@ def defectify_STYP(ast, task_name, logger, exp_spec_dict):
     return annotation
 
 
-def defectify_SMOV(ast, task_name, logger, exp_spec_dict):
+def defectify_SMOV(ast, task_name, logger, exp_spec_dict, line_nums):
     """
 
     :param ast:
     :param task_name:
     :param logger:
     :param exp_spec_dict:
+    :param line_nums:
     :return:
     """
     # statements_visitor = StatementsVisitor(ast)
@@ -1596,6 +1646,10 @@ def defectify_SMOV(ast, task_name, logger, exp_spec_dict):
     stmt_1 = random_pick_probless(body)
     index_1 = body.index(stmt_1)
     index_2 = (index_1 + distance) % length
+    if body[index_1].coord.line in line_nums:
+        return False
+    if body[index_2].coord.line in line_nums:
+        return False
     temp = body[index_1]
     body[index_1] = body[index_2]
     body[index_2] = temp
@@ -1622,13 +1676,14 @@ def defectify_SMOV(ast, task_name, logger, exp_spec_dict):
     return annotation
 
 
-def defectify_OFPO(ast, task_name, logger, exp_spec_dict):
+def defectify_OFPO(ast, task_name, logger, exp_spec_dict, line_nums):
     """
 
     :param ast:
     :param task_name:
     :param logger:
     :param exp_spec_dict:
+    :param line_nums:
     :return:
     """
     global_ids, global_funcs = parse_fileAST_exts(ast)
@@ -1669,6 +1724,8 @@ def defectify_OFPO(ast, task_name, logger, exp_spec_dict):
         print("Warning: No available function calls can be found.")
         return False
     target_func_call = random_pick_probless(available_func_calls)
+    if target_func_call.coord.line in line_nums:
+        return False
     line_code = generator.visit(target_func_call).split("\n")[0]
     target_param_type_map = funcs_param_type_map[target_func_call.name.name]
     available_param_index = {key: value for key, value in target_param_type_map.items() if len(value) > 1}
@@ -1701,13 +1758,14 @@ def defectify_OFPO(ast, task_name, logger, exp_spec_dict):
     return annotation
 
 
-def defectify_DCCR_to_const(ast, task_name, logger, exp_spec_dict):
+def defectify_DCCR_to_const(ast, task_name, logger, exp_spec_dict, line_nums):
     """
 
     :param ast:
     :param task_name:
     :param logger:
     :param exp_spec_dict:
+    :param line_nums:
     :return:
     """
 
@@ -1744,6 +1802,8 @@ def defectify_DCCR_to_const(ast, task_name, logger, exp_spec_dict):
         return False
 
     target_node = random_pick_probless(available_nodes)
+    if target_node.coord.line in line_nums:
+        return False
     line_code = generator.visit(target_node).split("\n")[0]
     replacement_offset = random_picker_spec["replacement_offset"]
 
@@ -1866,16 +1926,16 @@ def defectify_DCCR_to_const(ast, task_name, logger, exp_spec_dict):
     return annotation
 
 
-def defectify_DCCR_to_var(ast, task_name, logger, exp_spec_dict):
+def defectify_DCCR_to_var(ast, task_name, logger, exp_spec_dict, line_nums):
     """
 
     :param ast:
     :param task_name:
     :param logger:
     :param exp_spec_dict:
+    :param line_nums:
     :return:
     """
-    print("testing dccr2var")
     if "random_picker" in exp_spec_dict.keys():
         random_picker_spec = exp_spec_dict["random_picker"]
         random_picker = RandomPicker(random_picker_spec["random_int_list"], random_picker_spec["random_chr_list"])
@@ -1929,6 +1989,8 @@ def defectify_DCCR_to_var(ast, task_name, logger, exp_spec_dict):
         return False
 
     target_node = random_pick_probless(available_nodes)
+    if target_node.coord.line in line_nums:
+        return False
     line_code = generator.visit(target_node).split("\n")[0]
     replace_var = random_pick_probless(available_decls)
     if replace_var is None:
@@ -1983,13 +2045,14 @@ def defectify_DCCR_to_var(ast, task_name, logger, exp_spec_dict):
     return annotation
 
 
-def defectify_DCCR(ast, task_name, logger, exp_spec_dict):
+def defectify_DCCR(ast, task_name, logger, exp_spec_dict, line_nums):
     """
 
     :param ast:
     :param task_name:
     :param logger:
     :param exp_spec_dict:
+    :param line_nums:
     :return:
     """
     DCCR_EQUAL_PROB = True
@@ -2002,16 +2065,17 @@ def defectify_DCCR(ast, task_name, logger, exp_spec_dict):
                                                "defectify_DCCR_to_var"])]
     else:
         func = globals()["defectify_" + random_pick(list(dccr_spec.keys()), list(dccr_spec.values()))]
-    return func(ast, task_name, logger, exp_spec_dict)
+    return func(ast, task_name, logger, exp_spec_dict, line_nums)
 
 
-def defectify_DRVA_to_const(ast, task_name, logger, exp_spec_dict):
+def defectify_DRVA_to_const(ast, task_name, logger, exp_spec_dict, line_nums):
     """
 
     :param ast:
     :param task_name:
     :param logger:
     :param exp_spec_dict:
+    :param line_nums:
     :return:
     """
     if "random_picker" in exp_spec_dict.keys():
@@ -2043,6 +2107,8 @@ def defectify_DRVA_to_const(ast, task_name, logger, exp_spec_dict):
         print("No available node can be found.")
         return False
     target_node = random_pick_probless(available_nodes)
+    if target_node.coord.line in line_nums:
+        return False
     line_code = generator.visit(target_node).split("\n")[0]
     target_id = target_node.rvalue
     type_decl_visitor = TypeDeclVisitor(func)
@@ -2072,13 +2138,14 @@ def defectify_DRVA_to_const(ast, task_name, logger, exp_spec_dict):
     return annotation
 
 
-def defectify_DRVA_to_var(ast, task_name, logger, exp_spec_dict):
+def defectify_DRVA_to_var(ast, task_name, logger, exp_spec_dict, line_nums):
     """
 
     :param ast:
     :param task_name:
     :param logger:
     :param exp_spec_dict:
+    :param line_nums:
     :return:
     """
     if "random_picker" in exp_spec_dict.keys():
@@ -2110,6 +2177,8 @@ def defectify_DRVA_to_var(ast, task_name, logger, exp_spec_dict):
         print("No available node can be found.")
         return False
     target_node = random_pick_probless(available_nodes)
+    if target_node.coord.line in line_nums:
+        return False
     line_code = generator.visit(target_node).split("\n")[0]
     target_id = target_node.rvalue
     temp = target_id.name
@@ -2161,13 +2230,14 @@ def defectify_DRVA_to_var(ast, task_name, logger, exp_spec_dict):
     return annotation
 
 
-def defectify_DRVA(ast, task_name, logger, exp_spec_dict):
+def defectify_DRVA(ast, task_name, logger, exp_spec_dict, line_nums):
     """
 
     :param ast:
     :param task_name:
     :param logger:
     :param exp_spec_dict:
+    :param line_nums:
     :return:
     """
     DRVA_EQUAL_PROB = True
@@ -2180,16 +2250,17 @@ def defectify_DRVA(ast, task_name, logger, exp_spec_dict):
                                                "defectify_DRVA_to_var"])]
     else:
         func = globals()["defectify_" + random_pick(list(drva_spec.keys()), list(drva_spec.values()))]
-    return func(ast, task_name, logger, exp_spec_dict)
+    return func(ast, task_name, logger, exp_spec_dict, line_nums)
 
 
-def defectify_DRWV(ast, task_name, logger, exp_spec_dict):
+def defectify_DRWV(ast, task_name, logger, exp_spec_dict, line_nums):
     """
 
     :param ast:
     :param task_name:
     :param logger:
     :param exp_spec_dict:
+    :param line_nums:
     :return:
     """
     if "random_picker" in exp_spec_dict.keys():
@@ -2221,6 +2292,8 @@ def defectify_DRWV(ast, task_name, logger, exp_spec_dict):
         print("No available node can be found.")
         return False
     target_node = random_pick_probless(available_nodes)
+    if target_node.coord.line in line_nums:
+        return False
     line_code = generator.visit(target_node).split("\n")[0]
     target_id = target_node.lvalue
     temp = target_id.name
@@ -2272,13 +2345,14 @@ def defectify_DRWV(ast, task_name, logger, exp_spec_dict):
     return annotation
 
 
-def defectify_DCCA(ast, task_name, logger, exp_spec_dict):
+def defectify_DCCA(ast, task_name, logger, exp_spec_dict, line_nums):
     """
 
     :param ast:
     :param task_name:
     :param logger:
     :param exp_spec_dict:
+    :param line_nums:
     :return:
     """
     if "random_picker" in exp_spec_dict.keys():
@@ -2295,6 +2369,8 @@ def defectify_DCCA(ast, task_name, logger, exp_spec_dict):
         return False
     random_array_len_list = random_picker_spec["random_array_len_list"]
     target_array_decl = random_pick_probless(array_decls)
+    if target_array_decl.coord.line in line_nums:
+        return False
     line_code = generator.visit(target_array_decl).split("\n")[0]
     extra = []
     dim_value = 0
@@ -2322,20 +2398,20 @@ def defectify_DCCA(ast, task_name, logger, exp_spec_dict):
     return annotation
 
 
-def defectify_test(ast, task_name, logger, exp_spec_dict):
+def defectify_test(ast, task_name, logger, exp_spec_dict, line_nums):
     """
     test
     :param ast:
     :param task_name:
-    :param mode:
     :param logger:
-    :param outer_count:
+    :param exp_spec_dict:
+    :param line_nums:
     :return:
     """
     print("")
 
 
-def defectify(ast, task_name, defectify_type, logger, exp_spec_dict):
+def defectify(ast, task_name, defectify_type, logger, exp_spec_dict, line_nums):
     """
     generic defectify entry
     :param ast:                 ast structure
@@ -2343,6 +2419,7 @@ def defectify(ast, task_name, defectify_type, logger, exp_spec_dict):
     :param defectify_type:      what kind of defect to introduce
     :param logger:              a Logger instance
     :param exp_spec_dict:       the specification dictionary of current experiment(task)
+    :param line_nums:           list of line numbers of defects already introducec
     :return:
     """
     method_name = "defectify_" + defectify_type
@@ -2351,4 +2428,4 @@ def defectify(ast, task_name, defectify_type, logger, exp_spec_dict):
     except KeyError:
         print("Err: function {} has not been registered in ./defect/defectify".format(method_name))
         return
-    return func(ast, task_name, logger, exp_spec_dict)
+    return func(ast, task_name, logger, exp_spec_dict, line_nums)

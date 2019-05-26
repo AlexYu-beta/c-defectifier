@@ -1,4 +1,34 @@
 import re
+from subprocess import *
+
+
+def code_diff(code_before, code_after):
+    """
+    get the diff info between code_before and code_after using subprocess
+    :param code_before:
+    :param code_after:
+    :return:
+    """
+    left_file = './left'
+    right_file = './right'
+    left = open(left_file, "w")
+    right = open(right_file, "w")
+    left.write(code_before)
+    right.write(code_after)
+    left.close()
+    right.close()
+    diff_sentence = "diff " + left_file + " " + right_file
+    p = Popen(diff_sentence,
+              stdout=PIPE,
+              stderr=PIPE,
+              shell=True
+              )
+    p.wait()
+    out = p.stdout.read()
+    out = str(out)
+    return out
+
+
 def parse_header_body(code):
     """
     parse c header description and program body

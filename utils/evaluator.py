@@ -40,36 +40,7 @@ def annotation_test(task_name):
     for item in item_list:
         id, problem_id, submit_id, code, gen_code, annotations, status = item
         annotations = json.loads(annotations)
-        if len(annotations.items()) == 1:
-            annotation = list(annotations.values())[0]
-            line_num_annotation = str(annotation["line_num"])
-            left = open(left_file, "w")
-            right = open(right_file, "w")
-            left.write(code)
-            right.write(gen_code)
-            left.close()
-            right.close()
-            diff_sentence = "diff " + left_file + " " + right_file
-            # diff_sentence = "cat " + left_file
-            p = Popen(diff_sentence,
-                      stdout=PIPE,
-                      stderr=PIPE,
-                      shell=True
-                      )
-            p.wait()
-            out = p.stdout.read()
-            out = str(out)
-            if out.startswith(line_num_annotation, 2, len(out)):
-                db_origin.execute(MODIFY_DEFECTIFY_STATUS, ("PASS", id))
-                pass_ids.append(id)
-                pass_count += 1
-            else:
-                db_origin.execute(MODIFY_DEFECTIFY_STATUS, ("FAIL", id))
-                fail_ids.append(id)
-                fail_count += 1
-    print("pass {} cases".format(pass_count))
-    print("fail {} cases".format(fail_count))
-    print(fail_ids)
+
 
 
 def evaluate(task_name):

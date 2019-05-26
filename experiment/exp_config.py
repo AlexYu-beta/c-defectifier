@@ -561,10 +561,10 @@ single_db_test = {
     "sift_option": "",
     "limit": -1,
     "defects": {
-        "DCCA": 1.0
+        "ORRN": 1.0
     },
     "repeat_min": 1,
-    "repeat_max": 1,
+    "repeat_max": 2,
     "specifications": {
         "random_picker": {
             "random_int_list": [0, 1, 2, 3, 5, 10, 20, 30, 40, 50, 100],
