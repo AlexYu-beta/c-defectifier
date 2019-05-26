@@ -543,7 +543,7 @@ comprehensive_db_test = {
         "DCCA": 1/22
     },
     "repeat_min": 1,
-    "repeat_max": 1,
+    "repeat_max": 3,
     "specifications": {
         "random_picker": {
             "random_int_list": [0, 1, 2, 3, 5, 10, 20, 30, 40, 50, 100],
@@ -589,6 +589,6 @@ def generate_experiment_config(task_name):
 
 
 if __name__ == '__main__':
-    task_name = "single_db_test"
-    conf = single_db_test
+    task_name = "comprehensive_db_test"
+    conf = comprehensive_db_test
     generate_experiment_config(task_name)

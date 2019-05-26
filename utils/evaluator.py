@@ -24,34 +24,25 @@ def get_log_info(task_name):
     print(len([log_item for log_item in log_list if log_item['def_type'] != "nothing"]))
 
 
-def annotation_test(task_name):
-    print("testing annotations...")
-    exp_cfg = get_exp_cfg(task_name)
-    db_origin_path = config_dict["exp_output_path"] + "/" + task_name + "/" + task_name + ".db"
-    left_file = config_dict["exp_output_path"] + "/" + task_name + "/" + "left"
-    right_file = config_dict["exp_output_path"] + "/" + task_name + "/" + "right"
-    db_origin = DBConnection(db_origin_path)
-    QUERY = QUERY_DEFECTIFY
-    item_list = db_origin.execute(QUERY, "").fetchall()
-    pass_ids = []
-    fail_ids = []
-    pass_count = 0
-    fail_count = 0
-    for item in item_list:
-        id, problem_id, submit_id, code, gen_code, annotations, status = item
-        annotations = json.loads(annotations)
-
-
-
 def evaluate(task_name):
     """
 
     :param task_name:
     :return:
     """
+    print("=======================================")
+    print("Evaluating: {} ...".format(task_name))
+    db_origin_path = config_dict["exp_output_path"] + "/" + task_name + "/" + task_name + ".db"
+    db_origin = DBConnection(db_origin_path)
+    QUERY = QUERY_DEFECTIFY
+    item_list = db_origin.execute(QUERY, "").fetchall()
+    print("Total number of code sumbissions: {}".format(len(item_list)))
+    for item in item_list:
+        id, problem_id, submit_id, code, gen_code, annotations, status = item
+        annotations = json.loads(annotations)
 
-    annotation_test(task_name)
+    print("=======================================")
 
 
 if __name__ == '__main__':
-    evaluate("single_db_test")
+    evaluate("comprehensive_db_test")

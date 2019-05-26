@@ -4,15 +4,15 @@ int main()
   int d1;
   int d2;
   int d3;
-  scanf("%d%d%d", &d1, &d2, &d3);
   int s1 = d2 + d3;
-  int s2 = d1 + d3;
+  long s2 = d1 + d3;
   int s3 = d1 + d2;
   int s;
-  s1 = (d1 > s1) ? (d1) : (s1);
-  s2 = (d2 >= s2) ? (d2) : (s2);
+  scanf("%d%d%d", &d1, &d2, &d3);
+  s2 = (d2 < s2) ? (d2) : (s2);
+  s1 = (d1 < s1) ? (d1) : (s1);
   s3 = (d3 < s3) ? (d3) : (s3);
-  s = (s1 + s2) + s3;
+  d1 = (s1 + s2) + s3;
   printf("%d", s);
   return 0;
 }

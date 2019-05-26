@@ -50,8 +50,11 @@ def defectify_ORRN(ast, task_name, logger, exp_spec_dict, line_nums):
         return False
     # 2. randomly pick a node
     node = random_pick_probless(available_node_list)
-    line_num = node.cond.coord.line
-    if line_num in line_nums:
+    try:
+        line_num = node.cond.coord.line
+        if line_num in line_nums:
+            return False
+    except Exception:
         return False
     current_op = node.cond.op
     replace_ops = c_relational_binary_operator_set - {current_op}
@@ -175,7 +178,7 @@ def defectify_OILN_add_and(ast, task_name, logger, exp_spec_dict, line_nums):
     if node.cond.coord:
         logger.log_OILN(node.cond.coord, "add_and")
     else:
-        logger.log_OILN(node.cond.coord, "add_and")
+        return False
     line_code_def = generator.visit(node).split("\n")[0]
     annotation = {
         "class": "OILN_add_and",
@@ -297,7 +300,7 @@ def defectify_OILN_add_or(ast, task_name, logger, exp_spec_dict, line_nums):
     if node.cond.coord:
         logger.log_OILN(node.cond.coord, "add_or")
     else:
-        logger.log_OILN(node.cond.coord, "add_or")
+        return False
     line_code_def = generator.visit(node).split("\n")[0]
     annotation = {
         "class": "OILN_add_or",
@@ -501,7 +504,10 @@ def defectify_OILN_negate_cond(ast, task_name, logger, exp_spec_dict, line_nums)
     if node.cond is None:
         print("No condition can be found")
         return False
-    if node.cond.coord.line in line_nums:
+    try:
+        if node.cond.coord.line in line_nums:
+            return False
+    except Exception:
         return False
     if type(node.cond) != c_ast.BinaryOp:
         print("Warning: no binary operation can be found, no || can be deleted.")
@@ -1473,7 +1479,10 @@ def defectify_OAIS_del_op(ast, task_name, logger, exp_spec_dict, line_nums):
         if dad is None:
             print("Orphan")
             return False
-        if dad.coord.line in line_nums:
+        try:
+            if dad.coord.line in line_nums:
+                return False
+        except Exception:
             return False
         line_code = generator.visit(dad).split("\n")[0]
         for slot in dad.__slots__:
@@ -1496,7 +1505,10 @@ def defectify_OAIS_del_op(ast, task_name, logger, exp_spec_dict, line_nums):
         if dad is None:
             print("Orphan")
             return False
-        if dad.coord.line in line_nums:
+        try:
+            if dad.coord.line in line_nums:
+                return False
+        except Exception:
             return False
         line_code = generator.visit(dad).split("\n")[0]
         for slot in dad.__slots__:
@@ -1558,7 +1570,10 @@ def defectify_STYP(ast, task_name, logger, exp_spec_dict, line_nums):
     char_family = ["char"]
     float_family = ["float", "double"]
     var_decl = random_pick_probless(var_decls)
-    if var_decl.coord.line in line_nums:
+    try:
+        if var_decl.coord.line in line_nums:
+            return False
+    except Exception:
         return False
     if var_decl is None:
         print("No variant declaration.")
@@ -1802,7 +1817,10 @@ def defectify_DCCR_to_const(ast, task_name, logger, exp_spec_dict, line_nums):
         return False
 
     target_node = random_pick_probless(available_nodes)
-    if target_node.coord.line in line_nums:
+    try:
+        if target_node.coord.line in line_nums:
+            return False
+    except Exception:
         return False
     line_code = generator.visit(target_node).split("\n")[0]
     replacement_offset = random_picker_spec["replacement_offset"]
@@ -1989,7 +2007,10 @@ def defectify_DCCR_to_var(ast, task_name, logger, exp_spec_dict, line_nums):
         return False
 
     target_node = random_pick_probless(available_nodes)
-    if target_node.coord.line in line_nums:
+    try:
+        if target_node.coord.line in line_nums:
+            return False
+    except Exception:
         return False
     line_code = generator.visit(target_node).split("\n")[0]
     replace_var = random_pick_probless(available_decls)
@@ -2029,7 +2050,10 @@ def defectify_DCCR_to_var(ast, task_name, logger, exp_spec_dict, line_nums):
             temp = target_node.right.value
             target_node.right = c_ast.ID(name=replace_var.declname,
                                          coord=target_node.right.coord)
-            logger.log_DCCR(target_node.right.coord, "to_var")
+            try:
+                logger.log_DCCR(target_node.right.coord, "to_var")
+            except Exception:
+                return False
             line_code_def = generator.visit(target_node).split("\n")[0]
             annotation = {
                 "class": "DCCR_to_var",

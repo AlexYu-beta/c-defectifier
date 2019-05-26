@@ -335,6 +335,6 @@ def test():
 
 
 if __name__ == '__main__':
-    task_name = "single_db_test"
+    task_name = "comprehensive_db_test"
     drive(task_name)
     # test()
