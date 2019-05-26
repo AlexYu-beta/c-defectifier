@@ -96,6 +96,8 @@ def drive(task_name):
             try:
                 ast = parser.parse(body)
                 code = generate_exp_output_db(ast, headers)
+                headers, body = parse_header_body(code)
+                ast = parser.parse(body)
             except ParseError:
                 print("PE")
                 # print(generator.visit(ast))
@@ -114,6 +116,7 @@ def drive(task_name):
                     success = defectify(ast, task_name, defect, logger, exp_spec_dict)
                 if success:
                     success_times += 1
+                    success["line_num"] += len(headers.split("\n"))
                     annotations[str(success_times)] = success
             if success_times == 0:
                 logger.log_nothing()

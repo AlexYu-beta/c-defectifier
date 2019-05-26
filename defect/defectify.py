@@ -37,6 +37,8 @@ def defectify_ORRN(ast, task_name, logger, exp_spec_dict):
     :param exp_spec_dict:
     :return:
     """
+    # print("previous")
+    # print(generator.visit(ast))
     condition_visitor = ConditionVisitor(ast)
     condition_visitor.generic_visit(ast)
     # 1. find out all the nodes with 'cond' as one of the attributes
@@ -47,6 +49,7 @@ def defectify_ORRN(ast, task_name, logger, exp_spec_dict):
         return False
     # 2. randomly pick a node
     node = random_pick_probless(available_node_list)
+    line_num = node.cond.coord.line
     current_op = node.cond.op
     replace_ops = c_relational_binary_operator_set - {current_op}
     # 3. randomly pick a replacement
@@ -59,12 +62,14 @@ def defectify_ORRN(ast, task_name, logger, exp_spec_dict):
     line_code_def = generator.visit(node).split("\n")[0]
     annotation = {
         "class": "ORRN",
-        "line_num": node.coord.line,
+        "line_num": line_num,
         "line_code": line_code,
         "line_code_def": line_code_def,
         "op": current_op,
         "op_replace": replace_op
     }
+    # print("now")
+    # print(generator.visit(ast))
     return annotation
 
 

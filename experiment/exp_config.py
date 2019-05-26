@@ -559,7 +559,7 @@ single_db_test = {
     "src_dir": "/home/alex/PycharmProjects/c-defectifier/dataset/c_data_ok.db",
     "src_type": "db",
     "sift_option": "",
-    "limit": 10,
+    "limit": -1,
     "defects": {
         "ORRN": 1.0
     },
