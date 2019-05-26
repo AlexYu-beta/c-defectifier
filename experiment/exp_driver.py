@@ -235,10 +235,9 @@ def test():
     '''
     code_1 = r'''
     int main(){
-    int i,n,sum;
-    int a[10];
+    int i;
     sum = 0;
-    for (i = 0; i < n; i++)
+    for (i = 0; i < 100; i++)
     {
         sum += i;
         if (sum > 100)
@@ -247,6 +246,7 @@ def test():
         }
 
     }
+    printf("%d\n", sum);
 }
     '''
 
@@ -283,8 +283,8 @@ def test():
   return 0;
 }'''
     parser = c_parser.CParser()
-    ast = parser.parse(code_t)
-    print(ast)
+    ast = parser.parse(code_1)
+    ast.show()
     # logger = Logger("test")
     # exp_spec_dict = {
     #     "OEDE": {
@@ -295,6 +295,6 @@ def test():
 
 
 if __name__ == '__main__':
-    task_name = "comprehensive_db_test"
-    # drive(task_name)
-    test()
+    task_name = "single_db_test"
+    drive(task_name)
+    # test()

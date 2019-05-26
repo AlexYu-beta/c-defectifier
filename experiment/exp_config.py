@@ -554,6 +554,27 @@ comprehensive_db_test = {
     }
 }
 
+single_db_test = {
+    "task_name": "single_db_test",
+    "src_dir": "/home/alex/PycharmProjects/c-defectifier/dataset/c_data_ok.db",
+    "src_type": "db",
+    "sift_option": "",
+    "limit": 10,
+    "defects": {
+        "ORRN": 1.0
+    },
+    "repeat_min": 1,
+    "repeat_max": 1,
+    "specifications": {
+        "random_picker": {
+            "random_int_list": [0, 1, 2, 3, 5, 10, 20, 30, 40, 50, 100],
+            "random_chr_list": [chr(i) for i in range(128)],
+            "replacement_offset": [-4, -2, -1, 1, 2, 4],
+            "random_array_len_list": [2, 3, 4, 5, 6, 7, 8, 10, 20, 30, 40, 50, 100]
+        }
+    }
+}
+
 
 def generate_experiment_config(task_name):
     """
@@ -568,6 +589,6 @@ def generate_experiment_config(task_name):
 
 
 if __name__ == '__main__':
-    task_name = "comprehensive_db_test"
-    conf = comprehensive_db_test
+    task_name = "single_db_test"
+    conf = single_db_test
     generate_experiment_config(task_name)

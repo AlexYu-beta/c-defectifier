@@ -54,5 +54,14 @@
         <property name="enable_load_extension" value="true" />
       </driver-properties>
     </data-source>
+    <data-source source="LOCAL" name="single_db_test" uuid="db170e94-52a3-4500-8b08-9ed60caa2912">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/exp_output/single_db_test/single_db_test.db</jdbc-url>
+      <driver-properties>
+        <property name="enable_load_extension" value="true" />
+      </driver-properties>
+    </data-source>
   </component>
 </project>
