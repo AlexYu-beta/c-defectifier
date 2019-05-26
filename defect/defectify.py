@@ -288,7 +288,7 @@ def defectify_OILN_add_or(ast, task_name, logger, exp_spec_dict):
     if node.cond.coord:
         logger.log_OILN(node.cond.coord, "add_or")
     else:
-        logger.log_OILN(node.coord, "add_or")
+        logger.log_OILN(node.cond.coord, "add_or")
     line_code_def = generator.visit(node).split("\n")[0]
     annotation = {
         "class": "OILN_add_or",
@@ -355,6 +355,7 @@ def defectify_OILN_del_and(ast, task_name, logger, exp_spec_dict):
     line_code = generator.visit(node).split("\n")[0]
     # 3. save previous conditions
     temp = node.cond
+    line_num = node.cond.coord.line
     del_left = random_pick_probless([True, False])
     try:
         if del_left:
@@ -370,7 +371,7 @@ def defectify_OILN_del_and(ast, task_name, logger, exp_spec_dict):
     line_code_def = generator.visit(node).split("\n")[0]
     annotation = {
         "class": "OILN_del_and",
-        "line_num": node.coord.line,
+        "line_num": line_num,
         "line_code": line_code,
         "line_code_def": line_code_def,
         "cond_del": generator.visit(cond_del)
@@ -424,6 +425,7 @@ def defectify_OILN_del_or(ast, task_name, logger, exp_spec_dict):
     line_code = generator.visit(node).split("\n")[0]
     # 3. save previous conditions
     temp = node.cond
+    line_num = node.cond.coord.line
     del_left = random_pick_probless([True, False])
     try:
         if del_left:
@@ -439,7 +441,7 @@ def defectify_OILN_del_or(ast, task_name, logger, exp_spec_dict):
     line_code_def = generator.visit(node).split("\n")[0]
     annotation = {
         "class": "OILN_del_or",
-        "line_num": node.coord.line,
+        "line_num": line_num,
         "line_code": line_code,
         "line_code_def": line_code_def,
         "cond_del": generator.visit(cond_del)
@@ -513,7 +515,7 @@ def defectify_OILN_negate_cond(ast, task_name, logger, exp_spec_dict):
     line_code_def = generator.visit(node).split("\n")[0]
     annotation = {
         "class": "OILN_negate_cond",
-        "line_num": node.coord.line,
+        "line_num": node.cond.coord.line,
         "line_code": line_code,
         "line_code_def": line_code_def,
     }
@@ -1224,13 +1226,14 @@ def defectify_SDFN(ast, task_name, logger, exp_spec_dict):
     target_node = random_pick_probless(available_nodes)
     annotation = False
     if hasattr(target_node, "stmt"):
-        line_code = generator.visit(target_node).split("\n")[1]
+        line_num = target_node.stmt.coord.line
+        line_code = generator.visit(target_node.stmt).split("\n")[0]
         func_call = target_node.stmt
         target_node.stmt = c_ast.EmptyStatement(coord=func_call.coord)
         logger.log_SDFN(func_call.coord, "delete function call from statement")
         annotation = {
             "class": "SDFN",
-            "line_num": target_node.coord.line,
+            "line_num": line_num,
             "line_code": line_code
         }
         # retrieve ast
@@ -1242,12 +1245,13 @@ def defectify_SDFN(ast, task_name, logger, exp_spec_dict):
                 func_calls.append(stmt)
         func_call = random_pick_probless(func_calls)
         index = target_node.stmts.index(func_call)
+        line_num = func_call.coord.line
         line_code = generator.visit(target_node).split("\n")[index+1]
         target_node.stmts.remove(func_call)
         logger.log_SDFN(func_call.coord, "delete function call from statements")
         annotation = {
             "class": "SDFN",
-            "line_num": target_node.coord.line,
+            "line_num": line_num,
             "line_code": line_code
         }
         # retrieve ast

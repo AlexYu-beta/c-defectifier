@@ -123,6 +123,10 @@ def drive(task_name):
             else:
                 count += 1
                 gen_code = generate_exp_output_db(ast, headers)
+                for j in range(1, success_times + 1):
+                    annotation = annotations[str(j)]
+                    annotation["line_code"] = code.split("\n")[annotation["line_num"] - 1]
+                    annotation["line_code_def"] = gen_code.split("\n")[annotation["line_num"] - 1]
                 # print(gen_code)
                 db_target.execute(INSERT_DEFECTIFY, (count, problem_id, submit_id, code, gen_code, json.dumps(annotations), "UNCHECKED"))
         logger.write_log()

@@ -1,19 +1,25 @@
-#include<stdio.h>
+#include <stdio.h>
+#include <stdlib.h>
 int main()
 {
-  int d1;
-  int d2;
-  int d3;
-  scanf("%d%d%d", &d1, &d2, &d3);
-  int s1 = d2 + d3;
-  int s2 = d1 + d3;
-  int s3 = d1 + d2;
-  int s;
-  s1 = (d1 < s1) ? (d1) : (s1);
-  s2 = (d2 < s2) ? (d2) : (s2);
-  s3 = (d3 < s3) ? (d3) : (s3);
-  s = (s1 + s2) + s3;
-  printf("%d", s);
+  long long int n;
+  long long int j;
+  long long int i;
+  long long int s = 0;
+  long long int p = 0;
+  scanf("%I64d", &n);
+  long long int arr[n + 1];
+  for (i = 0; i < n; i++)
+    scanf("%I64d", &arr[i]);
+
+  for (i = 0; i < n; i++)
+  {
+    s = s + abs(arr[i]);
+    p = p - arr[i];
+    arr[i + 1] = arr[i + 1] + p;
+  }
+
+  printf("%I64d", s);
   return 0;
 }
 
