@@ -32,6 +32,9 @@ values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 QUERY_ALL = r'''
 select t.* from submit t'''
 
+QUERY_DEFECTIFY = r'''
+select d.* from defectify d'''
+
 DROP_DEFECTIFY = r'''
 drop table defectify;'''
 
@@ -44,11 +47,18 @@ create table defectify
   submit_id         TEXT,
   code              TEXT,
   gen_code          TEXT,
-  annotations       TEXT
+  annotations       TEXT,
+  status            TEXT
 );
 '''
 
 INSERT_DEFECTIFY = r'''
-insert into defectify(id, problem_id, submit_id, code, gen_code, annotations)
-values (?,?,?,?,?,?);
+insert into defectify(id, problem_id, submit_id, code, gen_code, annotations, status)
+values (?,?,?,?,?,?,?);
+'''
+
+MODIFY_DEFECTIFY_STATUS = r'''
+update defectify
+set status = ?
+where id = ? ;
 '''

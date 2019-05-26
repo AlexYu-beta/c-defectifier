@@ -6,14 +6,19 @@ def parse_header_body(code):
     :return:
     """
     lines = code.split('\n')
-    pattern_1 = re.compile('#include *<(.*)>|#include *"(.*)"')
+    pattern_1 = re.compile('#include *<(.*)>|#include *"(.*)"|#include*<(.*)>|#include*"(.*)"')
     pattern_2 = re.compile('#define .*')
+    pattern_3 = re.compile('\r|\n|\n\r|\r\n')
+    lines = list(filter(lambda line: pattern_3.match(line.strip()) is None, lines))
     body = list(filter(lambda line: pattern_1.match(line.strip()) is None, lines))
     headers = list(filter(lambda line: pattern_1.match(line) is not None, lines))
     body_without_sharp_define = [line if pattern_2.match(line.strip()) is None else '' for line in body]
     sharp_define_in_body = [line for line in body if pattern_2.match(line.strip()) is not None]
+    sharp_defines = len(sharp_define_in_body)
     headers = headers + sharp_define_in_body
-    return "\n".join(headers), "\n".join(body_without_sharp_define)
+    if len(headers) == 0:
+        return "", code, 0
+    return "\n".join(headers), "\n".join(body_without_sharp_define), sharp_defines
 
 
 def construct_program(headers, body):

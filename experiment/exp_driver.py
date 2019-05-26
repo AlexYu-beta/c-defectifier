@@ -91,12 +91,12 @@ def drive(task_name):
             problem_id = item[5]
             code = item[-1].strip('\'')
             code = code.replace('\r', '')
-            headers, body = parse_header_body(code)
+            headers, body, sharp_defines = parse_header_body(code)
             parser = c_parser.CParser()
             try:
                 ast = parser.parse(body)
                 code = generate_exp_output_db(ast, headers)
-                headers, body = parse_header_body(code)
+                headers, body, sharp_defines = parse_header_body(code)
                 ast = parser.parse(body)
             except ParseError:
                 print("PE")
@@ -116,7 +116,7 @@ def drive(task_name):
                     success = defectify(ast, task_name, defect, logger, exp_spec_dict)
                 if success:
                     success_times += 1
-                    success["line_num"] += len(headers.split("\n"))
+                    success["line_num"] += len(headers.split("\n")) - sharp_defines
                     annotations[str(success_times)] = success
             if success_times == 0:
                 logger.log_nothing()
@@ -124,7 +124,7 @@ def drive(task_name):
                 count += 1
                 gen_code = generate_exp_output_db(ast, headers)
                 # print(gen_code)
-                db_target.execute(INSERT_DEFECTIFY, (count, problem_id, submit_id, code, gen_code, json.dumps(annotations)))
+                db_target.execute(INSERT_DEFECTIFY, (count, problem_id, submit_id, code, gen_code, json.dumps(annotations), "UNCHECKED"))
         logger.write_log()
     else:
         print("Err: Wrong source type.")
@@ -285,16 +285,32 @@ def test():
   printf("%llu", brSektora);
   return 0;
 }'''
+    code_2 = '''int main() {
+    int a, b;
+    while(scanf("%d%d", &a, &b) > 0) {
+        int t = 0;
+        int d = 240 - b;
+        int c = 5;
+        while(d-c >= 0 && t < a) {
+            t++;
+            c += (t+1) * 5;
+        }
+        printf("%d\n", t);
+    }
+    return 0;
+}'''
+    headers, body, sharp_defines = parse_header_body(code_2)
     parser = c_parser.CParser()
-    ast = parser.parse(code_1)
-    ast.show()
-    # logger = Logger("test")
-    # exp_spec_dict = {
-    #     "OEDE": {
-    #         "from": '='
-    #     }
-    # }
-    # defectify(ast, "test", "test", logger, exp_spec_dict)
+    try:
+        ast = parser.parse(body)
+        code_2 = generate_exp_output_db(ast, headers)
+        print(code_2)
+        headers, body, sharp_defines = parse_header_body(code_2)
+        ast = parser.parse(body)
+    except ParseError:
+        print("PE")
+        # print(generator.visit(ast))
+    print(len(body.split("\n")))
 
 
 if __name__ == '__main__':

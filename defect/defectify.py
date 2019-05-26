@@ -169,7 +169,7 @@ def defectify_OILN_add_and(ast, task_name, logger, exp_spec_dict):
     if node.cond.coord:
         logger.log_OILN(node.cond.coord, "add_and")
     else:
-        logger.log_OILN(node.coord, "add_and")
+        logger.log_OILN(node.cond.coord, "add_and")
     line_code_def = generator.visit(node).split("\n")[0]
     annotation = {
         "class": "OILN_add_and",
