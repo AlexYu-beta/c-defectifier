@@ -35,6 +35,10 @@ select t.* from submit t'''
 QUERY_DEFECTIFY = r'''
 select d.* from defectify d'''
 
+QUERY_DEFECTIFY_PROBLEMS = r'''
+select distinct d.problem_id from defectify d;
+'''
+
 DROP_DEFECTIFY = r'''
 drop table defectify;'''
 
