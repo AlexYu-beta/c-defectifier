@@ -1602,12 +1602,18 @@ def defectify_SMOV(ast, task_name, logger, exp_spec_dict):
     result = decls + body
     target_node.block_items = result
     logger.log_SMOV(target_stmts[index_1].coord, target_stmts[index_2].coord)
+    if body[index_1].coord.line > body[index_2].coord.line:
+        line_num_1 = body[index_2].coord.line
+        line_num_2 = body[index_1].coord.line
+    else:
+        line_num_1 = body[index_1].coord.line
+        line_num_2 = body[index_2].coord.line
     annotation = {
         "class": "SMOV",
-        "line_num_1": body[index_2].coord.line,
-        "line_code_1": generator.visit(body[index_2]),
-        "line_num_2": body[index_1].coord.line,
-        "line_code_2": generator.visit(body[index_1])
+        "line_num": line_num_1,
+        "line_code": generator.visit(body[index_1]),
+        "line_num_2": line_num_2,
+        "line_code_def": generator.visit(body[index_2])
     }
     # retrieve ast
     # temp = target_stmts[index_1]

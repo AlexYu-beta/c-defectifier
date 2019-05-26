@@ -561,7 +561,7 @@ single_db_test = {
     "sift_option": "",
     "limit": -1,
     "defects": {
-        "SDFN": 1.0
+        "DCCA": 1.0
     },
     "repeat_min": 1,
     "repeat_max": 1,
