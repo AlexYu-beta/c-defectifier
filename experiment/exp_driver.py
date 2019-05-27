@@ -115,7 +115,7 @@ def drive(task_name):
                 tries = 0
                 while not success:
                     tries += 1
-                    if tries > 10:
+                    if tries > 500:
                         break
                     defect = random_pick(defects, prob)
                     success = defectify(ast, task_name, defect, logger, exp_spec_dict, line_nums)

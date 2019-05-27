@@ -368,7 +368,10 @@ def defectify_OILN_del_and(ast, task_name, logger, exp_spec_dict, line_nums):
     line_code = generator.visit(node).split("\n")[0]
     # 3. save previous conditions
     temp = node.cond
-    line_num = node.cond.coord.line
+    try:
+        line_num = node.cond.coord.line
+    except Exception:
+        return False
     if line_num in line_nums:
         return False
     del_left = random_pick_probless([True, False])
@@ -441,9 +444,13 @@ def defectify_OILN_del_or(ast, task_name, logger, exp_spec_dict, line_nums):
     line_code = generator.visit(node).split("\n")[0]
     # 3. save previous conditions
     temp = node.cond
-    line_num = node.cond.coord.line
-    if line_num in line_nums:
+    try:
+        line_num = node.cond.coord.line
+        if line_num in line_nums:
+            return False
+    except Exception:
         return False
+
     del_left = random_pick_probless([True, False])
     try:
         if del_left:
@@ -976,7 +983,10 @@ def defectify_SRIF_wrap_func_call(ast, task_name, logger, exp_spec_dict, line_nu
         if binary_op.left == target_id:
             temp = target_id
             binary_op.left = func_call
-            logger.log_SRIF(target_id.coord, "wrap func")
+            try:
+                logger.log_SRIF(target_id.coord, "wrap func")
+            except Exception:
+                return False
             line_code_def = generator.visit(node).split("\n")[0]
             annotation = {
                 "class": "SRIF_wrap_func_call",
@@ -992,7 +1002,10 @@ def defectify_SRIF_wrap_func_call(ast, task_name, logger, exp_spec_dict, line_nu
         elif binary_op.right == target_id:
             temp = target_id
             binary_op.right = func_call
-            logger.log_SRIF(target_id.coord, "wrap func")
+            try:
+                logger.log_SRIF(target_id.coord, "wrap func")
+            except Exception:
+                return False
             line_code_def = generator.visit(node).split("\n")[0]
             annotation = {
                 "class": "SRIF_wrap_func_call",
@@ -1049,20 +1062,38 @@ def defectify_SRIF_unwrap_func_call(ast, task_name, logger, exp_spec_dict, line_
                 and type(global_id.type.type) not in {c_ast.ArrayDecl, c_ast.TypeDecl, c_ast.Struct, c_ast.PtrDecl}:
             id_name_map[global_id.name] = global_id.type.type.names[0]
     # step 1: find all the if-nodes from current function
-    func = random_pick_probless(global_funcs)
-    if func is None:
-        print("NONE")
+    func = None
+    for global_func in global_funcs:
+        if global_func.decl.name == 'main':
+            func = global_func
+            break
+    if not func:
         return False
-    # if func.decl.name != "main":
-    #     print("Warning: Cannot unwrap function call outside function main.")
-    #     return False
-
     condition_visitor = ConditionVisitor(func)
     condition_visitor.generic_visit(func)
     nodes = condition_visitor.get_nodelist()
-    if len(nodes) == 0:
-        print("No condition node can be found")
-        return False
+    # if len(nodes) == 0:
+    #     print("No condition node can be found")
+    #     return False
+    # # print(global_funcs)
+    # for node in nodes:
+    #     func_call_visitor = FuncCallVisitor(node)
+    #     func_call_visitor.visit(node)
+    #     func_calls = func_call_visitor.get_nodelist()
+    #     if len(func_calls) == 0:
+    #         continue
+    #     print("test node")
+    #     for func_call in func_calls:
+    #         name = func_call.name.name
+    #         args = func_call.args
+    #         if args:
+    #             for expr in args.exprs:
+    #                 if type(expr) in {c_ast.ID}:
+    #                     pass
+    #
+    #
+    # return False
+
 
     # 2. choose one if-node and find out all the identifiers from its condition
     node = random_pick_probless(nodes)
@@ -1348,7 +1379,10 @@ def defectify_OAIS_add_op(ast, task_name, logger, exp_spec_dict, line_nums):
         print("no available nodes")
         return False
     target_node = random_pick_probless(available_nodes)
-    if target_node.coord.line in line_nums:
+    try:
+        if target_node.coord.line in line_nums:
+            return False
+    except Exception:
         return False
     if type(target_node.left) == c_ast.ID:
         temp = target_node.left
