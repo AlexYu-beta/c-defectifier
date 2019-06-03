@@ -68,6 +68,10 @@ QUERY_WRONG_SUBMIT_USERS_PROBLEMS = r'''
 select distinct s.user_id, s.problem_id from submit s where s.status != "OK";
 '''
 
+QUERY_TESTCASE = r'''
+select pt.* from problem_testcase pt
+'''
+
 DROP_DEFECTIFY = r'''
 drop table defectify;'''
 

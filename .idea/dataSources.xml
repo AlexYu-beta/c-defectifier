@@ -36,15 +36,6 @@
         </library>
       </libraries>
     </data-source>
-    <data-source source="LOCAL" name="prob_test" uuid="4a1e9e33-10c8-41f3-afda-70e61ae1493b">
-      <driver-ref>sqlite.xerial</driver-ref>
-      <synchronize>true</synchronize>
-      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
-      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/exp_output/prob_test_db/prob_test_db.db</jdbc-url>
-      <driver-properties>
-        <property name="enable_load_extension" value="true" />
-      </driver-properties>
-    </data-source>
     <data-source source="LOCAL" name="comprehensive_db_test" uuid="aea30c32-91d2-42a3-b0e5-ef167fbb4de4">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
