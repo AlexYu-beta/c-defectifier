@@ -320,21 +320,33 @@ def test():
     }
     return 0;
 }'''
-    headers, body, sharp_defines = parse_header_body(code_2)
+    code_3 = '''int main()
+{
+    int i;
+    for(i=0;i<10;i++)
+    {
+        printf("%d\n",i);
+    }
+}
+'''
+    # headers, body, sharp_defines = parse_header_body(code_2)
+    # parser = c_parser.CParser()
+    # try:
+    #     ast = parser.parse(body)
+    #     code_2 = generate_exp_output_db(ast, headers)
+    #     print(code_2)
+    #     headers, body, sharp_defines = parse_header_body(code_2)
+    #     ast = parser.parse(body)
+    # except ParseError:
+    #     print("PE")
+    #     # print(generator.visit(ast))
+    # print(len(body.split("\n")))
     parser = c_parser.CParser()
-    try:
-        ast = parser.parse(body)
-        code_2 = generate_exp_output_db(ast, headers)
-        print(code_2)
-        headers, body, sharp_defines = parse_header_body(code_2)
-        ast = parser.parse(body)
-    except ParseError:
-        print("PE")
-        # print(generator.visit(ast))
-    print(len(body.split("\n")))
+    ast = parser.parse(code_1)
+    ast.show()
 
 
 if __name__ == '__main__':
     task_name = "comprehensive_db_test"
-    drive(task_name)
-    # test()
+    # drive(task_name)
+    test()

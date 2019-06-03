@@ -30,13 +30,42 @@ values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 '''
 
 QUERY_ALL = r'''
-select t.* from submit t'''
+select t.* from submit t;
+'''
+
+QUERY_WRONG_SUBMIT = r'''
+select t.* from submit t where t.status != "OK";
+'''
 
 QUERY_DEFECTIFY = r'''
 select d.* from defectify d'''
 
 QUERY_DEFECTIFY_PROBLEMS = r'''
 select distinct d.problem_id from defectify d;
+'''
+
+QUERY_SUBMIT_PROBLEMS = r'''
+select distinct s.problem_id from submit s;
+'''
+
+QUERY_WRONG_SUBMIT_PROBLEMS = r'''
+select distinct s.problem_id from submit s where s.status != "OK";
+'''
+
+QUERY_SUBMIT_USERS = r'''
+select distinct s.user_id from submit s;
+'''
+
+QUERY_WRONG_SUBMIT_USERS = r'''
+select distinct s.user_id from submit s where s.status != "OK";
+'''
+
+QUERY_SUBMIT_USERS_PROBLEMS = r'''
+select distinct s.user_id, s.problem_id from submit s;
+'''
+
+QUERY_WRONG_SUBMIT_USERS_PROBLEMS = r'''
+select distinct s.user_id, s.problem_id from submit s where s.status != "OK";
 '''
 
 DROP_DEFECTIFY = r'''
